@@ -12,7 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('roles', function (Blueprint $table) {
+<<<<<<< HEAD
             $table->increments('id');
+=======
+            $table->increments('role_id');
+>>>>>>> 20da999 (second commit)
             $table->string('name', 50)->unique();
             $table->text('description')->nullable();
         });

@@ -1,11 +1,14 @@
 <?php
 
+<<<<<<< HEAD
 use App\Http\Controllers\API\V1\ConfigController;
 use App\Http\Controllers\API\V1\MenuController;
 use App\Http\Controllers\API\V1\ReferenceController;
 use App\Http\Controllers\API\V1\RoleController;
 use App\Http\Controllers\API\V1\UserController;
 use App\Http\Controllers\AuthController;
+=======
+>>>>>>> 20da999 (second commit)
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+<<<<<<< HEAD
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
@@ -71,4 +75,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/get-role-option', [ReferenceController::class, 'getRoleOption'])->middleware(['auth.api']);
         Route::get('/get-menu-access', [ReferenceController::class, 'getMenuAccess'])->middleware(['auth.api']);
     });
+=======
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+>>>>>>> 20da999 (second commit)
 });

@@ -2,13 +2,20 @@
 /node_modules
 /public/build
 /public/hot
+<<<<<<< HEAD
 # /public/storage
+=======
+/public/storage
+>>>>>>> 20da999 (second commit)
 /storage/*.key
 /vendor
 .env
 .env.backup
 .env.production
+<<<<<<< HEAD
 .phpunit.result.cache
+=======
+>>>>>>> 20da999 (second commit)
 Homestead.json
 Homestead.yaml
 auth.json

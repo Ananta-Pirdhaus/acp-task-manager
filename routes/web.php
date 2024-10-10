@@ -25,4 +25,8 @@ Route::get('/users', [UserController::class, 'index'])->name('users.index');
 Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
 Route::post('/users', [UserController::class, 'store'])->name('users.store');
 
+<<<<<<< HEAD
 Route::resource('tasks', TaskController::class);
+=======
+Route::resource('tasks', TaskController::class);
+>>>>>>> 20da999 (second commit)

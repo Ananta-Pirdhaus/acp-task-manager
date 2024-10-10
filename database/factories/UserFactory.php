@@ -37,7 +37,11 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
+<<<<<<< HEAD
         return $this->state(fn (array $attributes) => [
+=======
+        return $this->state(fn(array $attributes) => [
+>>>>>>> 20da999 (second commit)
             'email_verified_at' => null,
         ]);
     }

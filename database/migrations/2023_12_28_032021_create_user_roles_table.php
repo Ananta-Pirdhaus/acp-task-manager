@@ -13,8 +13,13 @@ return new class extends Migration
     {
         Schema::create('user_roles', function (Blueprint $table) {
             $table->id('user_role_id');
+<<<<<<< HEAD
             $table->bigInteger('user_id')->unsigned()->unsigned();
             $table->bigInteger('role_id')->unsigned()->unsigned();
+=======
+            $table->bigInteger('user_id')->unsigned();
+            $table->bigInteger('role_id')->unsigned();
+>>>>>>> 20da999 (second commit)
             $table->timestamps();
             $table->bigInteger('created_by')->unsigned()->nullable();
             $table->bigInteger('updated_by')->unsigned()->nullable();

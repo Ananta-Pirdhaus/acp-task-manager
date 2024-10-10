@@ -1,5 +1,9 @@
 <?php
+<<<<<<< HEAD
 // app/Http/Controllers/TaskController.php
+=======
+
+>>>>>>> 20da999 (second commit)
 namespace App\Http\Controllers;
 
 use App\Models\Task;
@@ -21,6 +25,10 @@ class TaskController extends Controller
     }
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 20da999 (second commit)
     public function store(Request $request)
     {
         $request->validate([
@@ -28,7 +36,11 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'status' => 'required|in:pending,in_progress,completed',
             'priority' => 'required|in:low,medium,high',
+<<<<<<< HEAD
             'assigned_to' => 'nullable|integer',
+=======
+            'assigned_to' => 'nullable|integer|exists:users,user_id',
+>>>>>>> 20da999 (second commit)
             'deadline' => 'nullable|date',
         ]);
 
@@ -48,7 +60,12 @@ class TaskController extends Controller
     public function edit($id)
     {
         $task = Task::findOrFail($id);
+<<<<<<< HEAD
         return view('tasks.edit', compact('task'));
+=======
+        $users = User::all();
+        return view('tasks.edit', compact('task', 'users'));
+>>>>>>> 20da999 (second commit)
     }
 
     public function update(Request $request, $id)
@@ -58,7 +75,11 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'status' => 'required|in:pending,in_progress,completed',
             'priority' => 'required|in:low,medium,high',
+<<<<<<< HEAD
             'assigned_to' => 'nullable|integer',
+=======
+            'assigned_to' => 'nullable|integer|exists:users,user_id',
+>>>>>>> 20da999 (second commit)
             'deadline' => 'nullable|date',
         ]);
 
