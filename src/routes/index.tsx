@@ -2,6 +2,7 @@ import { RouteObject } from "react-router";
 import Layout from "../layout";
 import Boards from "../pages/Boards";
 import Main from "../pages/Main";
+import Project from "../pages/Project";
 
 const routes: RouteObject[] = [
   {
@@ -27,6 +28,20 @@ const routes: RouteObject[] = [
           {
             path: "",
             element: <Main />,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: "/project",
+    element: <Layout />,
+    children: [
+      {
+        children: [
+          {
+            path: "",
+            element: <Project />,
           },
         ],
       },

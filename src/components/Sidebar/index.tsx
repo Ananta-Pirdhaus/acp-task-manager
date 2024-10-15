@@ -27,7 +27,7 @@ const Sidebar = () => {
     {
       title: "Projects",
       icon: <GridOutline color="#555" width="22px" height="22px" />,
-      path: "/projects", // Example path
+      path: "/project", // Example path
     },
     {
       title: "Analytics",

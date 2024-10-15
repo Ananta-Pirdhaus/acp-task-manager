@@ -12,7 +12,7 @@ interface TaskData {
   title: string;
   description: string;
   priority: string;
-  deadline: number;
+  deadline: string; // Change from number to string for date handling
   image?: string;
   alt?: string;
   tags: Tag[];
@@ -145,7 +145,7 @@ const EditModal = ({
           <option value="high">High</option>
         </select>
         <input
-          type="number"
+          type="date" // Change to date input for deadline
           name="deadline"
           value={taskData.deadline}
           onChange={handleChange}
