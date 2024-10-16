@@ -17,7 +17,7 @@ const Sidebar = () => {
     {
       title: "Home",
       icon: <HomeOutline color="#555" width="22px" height="22px" />,
-      path: "/main", // Set the path for navigation
+      path: "/", // Set the path for navigation
     },
     {
       title: "Boards",

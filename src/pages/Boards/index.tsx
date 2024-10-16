@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { useState } from "react";
-import { Board } from "../../data/board";
+import { useState, useEffect } from "react";
 import { Columns } from "../../types";
 import { onDragEnd } from "../../helpers/onDragEnd";
 import { AddOutline } from "react-ionicons";
@@ -9,13 +8,24 @@ import AddModal from "../../components/Modals/AddModal";
 import EditModal from "../../components/Modals/EditModal";
 import Task from "../../components/Task";
 
+// Fungsi untuk mengambil data dari localStorage
+const getInitialColumns = (): Columns => {
+  const storedData = localStorage.getItem("taskBoard");
+  return storedData ? JSON.parse(storedData) : {}; // Kembalikan objek kosong jika tidak ada data
+};
+
 const Home = () => {
-  const [columns, setColumns] = useState<Columns>(Board);
+  const [columns, setColumns] = useState<Columns>(getInitialColumns());
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState("");
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<any>(null);
+
+  // Update localStorage setiap kali kolom diubah
+  useEffect(() => {
+    localStorage.setItem("taskBoard", JSON.stringify(columns));
+  }, [columns]);
 
   const openModal = (columnId: any) => {
     setSelectedColumn(columnId);
@@ -42,7 +52,7 @@ const Home = () => {
     setColumns(newBoard);
   };
 
-  const handleEditTask = (updatedTask: TaskData) => {
+  const handleEditTask = (updatedTask: any) => {
     const newColumns = { ...columns };
 
     const columnId = Object.keys(newColumns).find((id) =>
@@ -66,7 +76,6 @@ const Home = () => {
     setColumns(newColumns);
   };
 
-  // Add handleDeleteTask function
   const handleDeleteTask = (taskId: any) => {
     const newColumns = { ...columns };
 
@@ -79,7 +88,6 @@ const Home = () => {
       return;
     }
 
-    // Remove task from column
     newColumns[columnId].items = newColumns[columnId].items.filter(
       (task) => task.id !== taskId
     );
@@ -112,14 +120,12 @@ const Home = () => {
                         index={index}
                       >
                         {(provided: any) => (
-                          <>
-                            <Task
-                              provided={provided}
-                              task={task}
-                              onEdit={() => openEditModal(task)}
-                              onDelete={() => handleDeleteTask(task.id)} // Pass delete function
-                            />
-                          </>
+                          <Task
+                            provided={provided}
+                            task={task}
+                            onEdit={() => openEditModal(task)}
+                            onDelete={() => handleDeleteTask(task.id)} // Pass delete function
+                          />
                         )}
                       </Draggable>
                     ))}

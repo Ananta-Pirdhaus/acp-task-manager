@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { v4 as uuidv4 } from "uuid";
 import taskImage from "../assets/images/task.jpg";
 import taskImage2 from "../assets/images/task2.jpg";
@@ -5,6 +6,7 @@ import taskImage3 from "../assets/images/task3.jpg";
 import { Columns } from "../types";
 import { getRandomColors } from "../helpers/getRandomColors";
 
+// Definisi objek Board
 export const Board: Columns = {
   backlog: {
     name: "Backlog",
@@ -14,9 +16,9 @@ export const Board: Columns = {
         title: "Admin Panel Front-end",
         description: "Lorem ipsum dolor sit amet ..",
         priority: "medium",
-        startDate: "2024-10-10", // Contoh tanggal mulai
-        endDate: "2024-10-20", // Contoh tanggal akhir
-        startTime: "09:00", // Contoh waktu mulai
+        startDate: "2024-10-10",
+        endDate: "2024-10-20",
+        startTime: "09:00",
         image: taskImage2,
         alt: "task image",
         tags: [
@@ -144,3 +146,13 @@ export const Board: Columns = {
     ],
   },
 };
+
+// Menyimpan Board ke Local Storage
+localStorage.setItem("taskBoard", JSON.stringify(Board));
+
+// Mengambil data dari Local Storage dan mengonversinya kembali ke objek JavaScript
+const savedBoard = localStorage.getItem("taskBoard");
+if (savedBoard) {
+  const boardData = JSON.parse(savedBoard);
+  console.log(boardData); // Menampilkan data yang diambil dari Local Storage
+}

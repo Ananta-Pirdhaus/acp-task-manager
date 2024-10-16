@@ -1,4 +1,4 @@
-import { RouteObject } from "react-router";
+import { RouteObject, Navigate } from "react-router";
 import Layout from "../layout";
 import Boards from "../pages/Boards";
 import Main from "../pages/Main";
@@ -21,13 +21,17 @@ const routes: RouteObject[] = [
   },
   {
     path: "/main",
+    element: <Navigate to="/" />, // Redirect /main to /
+  },
+  {
+    path: "/",
     element: <Layout />,
     children: [
       {
         children: [
           {
             path: "",
-            element: <Main />,
+            element: <Main />, // Main component now accessible from "/"
           },
         ],
       },
