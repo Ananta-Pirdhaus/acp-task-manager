@@ -12,7 +12,10 @@ interface TaskData {
   title: string;
   description: string;
   priority: string;
-  deadline: string; // Change from number to string for date handling
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
   image?: string;
   alt?: string;
   tags: Tag[];
@@ -22,8 +25,8 @@ interface EditModalProps {
   isOpen: boolean;
   onClose: () => void;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  handleEditTask: (taskData: TaskData) => void; // Function to handle the edited task data
-  currentTaskData: TaskData; // Current task data to edit
+  handleEditTask: (taskData: TaskData) => void;
+  currentTaskData: TaskData;
 }
 
 const EditModal = ({
@@ -33,10 +36,9 @@ const EditModal = ({
   handleEditTask,
   currentTaskData,
 }: EditModalProps) => {
-  const [taskData, setTaskData] = useState<TaskData>(currentTaskData); // State to hold task data
-  const [tagTitle, setTagTitle] = useState(""); // State to hold tag title
+  const [taskData, setTaskData] = useState<TaskData>(currentTaskData);
+  const [tagTitle, setTagTitle] = useState("");
 
-  // Effect to update taskData whenever currentTaskData changes
   useEffect(() => {
     setTaskData(currentTaskData);
   }, [currentTaskData]);
@@ -47,7 +49,7 @@ const EditModal = ({
     >
   ) => {
     const { name, value } = e.target;
-    setTaskData((prevData) => ({ ...prevData, [name]: value })); // Update taskData state
+    setTaskData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +59,7 @@ const EditModal = ({
         if (e.target) {
           setTaskData((prevData) => ({
             ...prevData,
-            image: e.target.result as string, // Update image state
+            image: e.target.result as string,
           }));
         }
       };
@@ -71,29 +73,36 @@ const EditModal = ({
     const { bg, text } = getRandomColors();
     const newTag: Tag = { title: tagTitle.trim(), bg, text };
 
-    // Check if the tag already exists
     if (!taskData.tags.some((tag) => tag.title === newTag.title)) {
       setTaskData((prevData) => ({
         ...prevData,
-        tags: [...prevData.tags, newTag], // Add new tag
+        tags: [...prevData.tags, newTag],
       }));
     } else {
       alert("Tag already exists.");
     }
 
-    setTagTitle(""); // Clear tag input
+    setTagTitle("");
   };
 
   const closeModal = () => {
     setOpen(false);
     onClose();
-    setTaskData(currentTaskData); // Reset task data when closing
+    setTaskData(currentTaskData);
   };
 
   const handleSubmit = () => {
-    console.log("Submitting task data:", taskData); // Log current task data
+    console.log("Submitting task data:", taskData);
 
-    const requiredFields = ["title", "priority", "description", "deadline"];
+    const requiredFields = [
+      "title",
+      "priority",
+      "description",
+      "startDate",
+      "startTime",
+      "endDate",
+      "endTime",
+    ];
     const isValid = requiredFields.every((field) => taskData[field]);
 
     if (!isValid) {
@@ -101,9 +110,9 @@ const EditModal = ({
       return;
     }
 
-    console.log("Updating task:", taskData); // Log the task being updated
-    handleEditTask(taskData); // Call the edit task handler
-    closeModal(); // Close modal
+    console.log("Updating task:", taskData);
+    handleEditTask(taskData);
+    closeModal();
   };
 
   return (
@@ -116,7 +125,7 @@ const EditModal = ({
         className="w-full h-full bg-black opacity-70 absolute left-0 top-0 z-20"
         onClick={closeModal}
       ></div>
-      <div className="md:w-[30vw] w-[90%] bg-white rounded-lg shadow-md z-50 flex flex-col items-center gap-3 px-5 py-6 overflow-y-auto overflow-x-auto max-h-[80vh]">
+      <div className="md:w-[30vw] w-[90%] bg-white rounded-lg shadow-md z-50 flex flex-col items-center gap-3 px-5 py-6 overflow-y-auto max-h-[80vh]">
         <input
           type="text"
           name="title"
@@ -145,11 +154,31 @@ const EditModal = ({
           <option value="high">High</option>
         </select>
         <input
-          type="date" // Change to date input for deadline
-          name="deadline"
-          value={taskData.deadline}
+          type="date" // Start date input
+          name="startDate"
+          value={taskData.startDate}
           onChange={handleChange}
-          placeholder="Deadline"
+          className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
+        />
+        <input
+          type="time" // Start time input
+          name="startTime"
+          value={taskData.startTime}
+          onChange={handleChange}
+          className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
+        />
+        <input
+          type="date" // End date input
+          name="endDate"
+          value={taskData.endDate}
+          onChange={handleChange}
+          className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
+        />
+        <input
+          type="time" // End time input
+          name="endTime"
+          value={taskData.endTime}
+          onChange={handleChange}
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
         />
         <input
@@ -198,7 +227,7 @@ const EditModal = ({
         )}
         <button
           className="w-full rounded-md h-10 bg-green-500 text-amber-50 font-medium"
-          onClick={handleSubmit} // Call the submit handler
+          onClick={handleSubmit}
         >
           Save
         </button>
