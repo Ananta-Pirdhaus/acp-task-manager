@@ -7,6 +7,8 @@ import { AddOutline } from "react-ionicons";
 import AddModal from "../../components/Modals/AddModal";
 import EditModal from "../../components/Modals/EditModal";
 import Task from "../../components/Task";
+import { toast } from "react-toastify";
+import ToastProvider from "../../helpers/onNotifications"; // Impor komponen ToastProvider
 
 // Fungsi untuk mengambil data dari localStorage
 const getInitialColumns = (): Columns => {
@@ -50,6 +52,7 @@ const Home = () => {
     const newBoard = { ...columns };
     newBoard[selectedColumn].items.push(taskData);
     setColumns(newBoard);
+    toast.success("Task added successfully!"); // Tampilkan notifikasi saat task ditambahkan
   };
 
   const handleEditTask = (updatedTask: any) => {
@@ -74,6 +77,7 @@ const Home = () => {
 
     newColumns[columnId].items[taskIndex] = updatedTask;
     setColumns(newColumns);
+    toast.info("Task updated successfully!"); // Tampilkan notifikasi saat task diedit
   };
 
   const handleDeleteTask = (taskId: any) => {
@@ -93,10 +97,13 @@ const Home = () => {
     );
 
     setColumns(newColumns); // Update state with new columns
+    toast.error("Task deleted successfully!"); // Tampilkan notifikasi saat task dihapus
   };
 
   return (
     <>
+      <ToastProvider options={{ position: "top-right", autoClose: 3000 }} />{" "}
+      {/* Tambahkan komponen ToastProvider */}
       <DragDropContext
         onDragEnd={(result: any) => onDragEnd(result, columns, setColumns)}
       >
@@ -144,14 +151,12 @@ const Home = () => {
           ))}
         </div>
       </DragDropContext>
-
       <AddModal
         isOpen={modalOpen}
         onClose={closeModal}
         setOpen={setModalOpen}
         handleAddTask={handleAddTask}
       />
-
       {selectedTask && (
         <EditModal
           isOpen={editModalOpen}
