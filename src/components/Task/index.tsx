@@ -2,6 +2,7 @@
 import { TimeOutline, PencilOutline, TrashBinOutline } from "react-ionicons";
 import { TaskT } from "../../types";
 import { DraggableProvided } from "react-beautiful-dnd"; // Import the correct type
+import { useEffect, useState } from "react";
 
 interface TaskProps {
   task: TaskT;
@@ -23,6 +24,25 @@ const Task = ({ task, provided, onEdit, onDelete }: TaskProps) => {
     alt,
     tags,
   } = task;
+
+  const [progress, setProgress] = useState<number>(task.progress || 0); // Default to task's initial progress or 0
+
+  // Retrieve the progress from localStorage
+  useEffect(() => {
+    const savedBoard = localStorage.getItem("taskBoard");
+    if (savedBoard) {
+      const boardData = JSON.parse(savedBoard);
+
+      // Find the task by id and update the progress if it exists
+      const taskFromStorage = Object.values(boardData)
+        .flatMap((column: any) => column.items)
+        .find((item: any) => item.id === task.id);
+
+      if (taskFromStorage && taskFromStorage.progress) {
+        setProgress(taskFromStorage.progress);
+      }
+    }
+  }, [task.id]);
 
   // Convert start and end times to Date objects
   const startDateTime = new Date(`${startDate}T${startTime}`);
@@ -72,6 +92,19 @@ const Task = ({ task, provided, onEdit, onDelete }: TaskProps) => {
         <span className="text-[13.5px] text-gray-500">{description}</span>
       </div>
       <div className="w-full border border-dashed"></div>
+
+      {/* Progress Bar Section */}
+      <div className="w-full flex items-center justify-between">
+        <span className="text-[13px] text-gray-700">Progress:</span>
+        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mx-2">
+          <div
+            className="h-full bg-green-500"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+        <span className="text-[13px] text-gray-700">{progress}%</span>
+      </div>
+
       <div className="w-full flex items-center justify-between">
         <div className="flex items-center gap-1">
           <TimeOutline color={"#666"} width="19px" height="19px" />

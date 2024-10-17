@@ -19,6 +19,7 @@ interface TaskData {
   image?: string;
   alt?: string;
   tags: Tag[];
+  progress: number; // Adding progress attribute
 }
 
 interface EditModalProps {
@@ -40,7 +41,7 @@ const EditModal = ({
   const [tagTitle, setTagTitle] = useState("");
 
   useEffect(() => {
-    setTaskData(currentTaskData);
+    setTaskData(currentTaskData); // Update task data from props
   }, [currentTaskData]);
 
   const handleChange = (
@@ -73,6 +74,7 @@ const EditModal = ({
     const { bg, text } = getRandomColors();
     const newTag: Tag = { title: tagTitle.trim(), bg, text };
 
+    // Avoid duplicate tags
     if (!taskData.tags.some((tag) => tag.title === newTag.title)) {
       setTaskData((prevData) => ({
         ...prevData,
@@ -88,12 +90,10 @@ const EditModal = ({
   const closeModal = () => {
     setOpen(false);
     onClose();
-    setTaskData(currentTaskData);
+    setTaskData(currentTaskData); // Reset task data
   };
 
   const handleSubmit = () => {
-    console.log("Submitting task data:", taskData);
-
     const requiredFields = [
       "title",
       "priority",
@@ -110,7 +110,6 @@ const EditModal = ({
       return;
     }
 
-    console.log("Updating task:", taskData);
     handleEditTask(taskData);
     closeModal();
   };
@@ -126,6 +125,18 @@ const EditModal = ({
         onClick={closeModal}
       ></div>
       <div className="md:w-[30vw] w-[90%] bg-white rounded-lg shadow-md z-50 flex flex-col items-center gap-3 px-5 py-6 overflow-y-auto max-h-[80vh]">
+        {/* Input for task progress */}
+        <label className="w-full text-sm">Progress: {taskData.progress}%</label>
+        <input
+          type="range"
+          name="progress"
+          min="0"
+          max="100"
+          value={taskData.progress}
+          onChange={handleChange}
+          className="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer"
+        />
+
         <input
           type="text"
           name="title"
@@ -154,28 +165,28 @@ const EditModal = ({
           <option value="high">High</option>
         </select>
         <input
-          type="date" // Start date input
+          type="date"
           name="startDate"
           value={taskData.startDate}
           onChange={handleChange}
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
         />
         <input
-          type="time" // Start time input
+          type="time"
           name="startTime"
           value={taskData.startTime}
           onChange={handleChange}
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
         />
         <input
-          type="date" // End date input
+          type="date"
           name="endDate"
           value={taskData.endDate}
           onChange={handleChange}
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
         />
         <input
-          type="time" // End time input
+          type="time"
           name="endTime"
           value={taskData.endTime}
           onChange={handleChange}

@@ -6,7 +6,7 @@ import taskImage3 from "../assets/images/task3.jpg";
 import { Columns } from "../types";
 import { getRandomColors } from "../helpers/getRandomColors";
 
-// Definisi objek Board
+// Definisi objek Board dengan properti progress
 export const Board: Columns = {
   backlog: {
     name: "Backlog",
@@ -25,6 +25,7 @@ export const Board: Columns = {
           { title: "Test", ...getRandomColors() },
           { title: "Front", ...getRandomColors() },
         ],
+        progress: 0, // New progress property
       },
       {
         id: uuidv4(),
@@ -38,6 +39,7 @@ export const Board: Columns = {
           { title: "Test", ...getRandomColors() },
           { title: "Front", ...getRandomColors() },
         ],
+        progress: 20, // New progress property
       },
     ],
   },
@@ -56,6 +58,7 @@ export const Board: Columns = {
           { title: "Test", ...getRandomColors() },
           { title: "Front", ...getRandomColors() },
         ],
+        progress: 40, // New progress property
       },
       {
         id: uuidv4(),
@@ -71,6 +74,7 @@ export const Board: Columns = {
           { title: "Test", ...getRandomColors() },
           { title: "Front", ...getRandomColors() },
         ],
+        progress: 50, // New progress property
       },
     ],
   },
@@ -91,6 +95,7 @@ export const Board: Columns = {
           { title: "Test", ...getRandomColors() },
           { title: "Front", ...getRandomColors() },
         ],
+        progress: 70, // New progress property
       },
     ],
   },
@@ -109,6 +114,7 @@ export const Board: Columns = {
           { title: "Test", ...getRandomColors() },
           { title: "Front", ...getRandomColors() },
         ],
+        progress: 80, // New progress property
       },
       {
         id: uuidv4(),
@@ -122,6 +128,7 @@ export const Board: Columns = {
           { title: "Test", ...getRandomColors() },
           { title: "Front", ...getRandomColors() },
         ],
+        progress: 60, // New progress property
       },
     ],
   },
@@ -142,6 +149,7 @@ export const Board: Columns = {
           { title: "Test", ...getRandomColors() },
           { title: "Front", ...getRandomColors() },
         ],
+        progress: 100, // New progress property
       },
     ],
   },

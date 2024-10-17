@@ -33,6 +33,7 @@ const AddModal = ({
     image: "",
     alt: "",
     tags: [] as Tag[],
+    progress: 0, // New progress attribute (percentage)
   };
 
   const [taskData, setTaskData] = useState(initialTaskData);
@@ -138,6 +139,18 @@ const AddModal = ({
             className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
           />
         )}
+
+        {/* New: Input for progress */}
+        <label className="w-full text-sm">Progress: {taskData.progress}%</label>
+        <input
+          type="range"
+          name="progress"
+          min="0"
+          max="100"
+          value={taskData.progress}
+          onChange={handleChange}
+          className="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer"
+        />
 
         <input
           type="text"
