@@ -3,6 +3,8 @@ import Layout from "../layout";
 import Boards from "../pages/Boards";
 import Main from "../pages/Main";
 import Project from "../pages/Project";
+import Login from "../pages/Auth/Login";
+import Register from "../pages/Auth/Register";
 
 const routes: RouteObject[] = [
   {
@@ -50,6 +52,14 @@ const routes: RouteObject[] = [
         ],
       },
     ],
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <Register />,
   },
 ];
 

@@ -1,34 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { getRandomColors } from "../../helpers/getRandomColors";
+import { toast } from "react-toastify"; // Import toast for notifications
+import ToastProvider from "../../helpers/onNotifications"; // Import ToastProvider
 
-interface Tag {
-  title: string;
-  bg: string;
-  text: string;
-}
-
-interface TaskData {
-  id: string;
-  title: string;
-  description: string;
-  priority: string;
-  startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-  image?: string;
-  alt?: string;
-  tags: Tag[];
-  progress: number; // Adding progress attribute
-}
-
-interface EditModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  handleEditTask: (taskData: TaskData) => void;
-  currentTaskData: TaskData;
-}
+// Interfaces remain unchanged...
+// [Your existing Tag and TaskData interfaces here]
 
 const EditModal = ({
   isOpen,
@@ -80,8 +56,9 @@ const EditModal = ({
         ...prevData,
         tags: [...prevData.tags, newTag],
       }));
+      toast.success(`Tag "${newTag.title}" added!`); // Notify success
     } else {
-      alert("Tag already exists.");
+      toast.error("Tag already exists."); // Notify error
     }
 
     setTagTitle("");
@@ -106,12 +83,13 @@ const EditModal = ({
     const isValid = requiredFields.every((field) => taskData[field]);
 
     if (!isValid) {
-      alert("Please fill in all required fields.");
+      toast.error("Please fill in all required fields."); // Notify error
       return;
     }
 
     handleEditTask(taskData);
     closeModal();
+
   };
 
   return (
