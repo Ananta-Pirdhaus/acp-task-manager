@@ -26,14 +26,15 @@ const AddModal = ({
     id: uuidv4(),
     title: "",
     description: "",
-    startDate: "", // Tanggal mulai
-    endDate: "", // Tanggal akhir
-    startTime: "", // Jam mulai
-    endTime: "", // Jam akhir (optional)
+    priority: "medium", // Default priority value
+    startDate: "",
+    endDate: "",
+    startTime: "",
+    endTime: "",
     image: "",
     alt: "",
     tags: [] as Tag[],
-    progress: 0, // New progress attribute (percentage)
+    progress: 0,
   };
 
   const [taskData, setTaskData] = useState(initialTaskData);
@@ -107,6 +108,19 @@ const AddModal = ({
           placeholder="Description"
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm font-medium"
         />
+
+        {/* Priority selection */}
+        <select
+          name="priority"
+          value={taskData.priority}
+          onChange={handleChange}
+          className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm font-medium"
+        >
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+
         <input
           type="date"
           name="startDate"
@@ -129,7 +143,6 @@ const AddModal = ({
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
         />
 
-        {/* Conditionally render the endTime input if startDate equals endDate */}
         {taskData.startDate && taskData.startDate === taskData.endDate && (
           <input
             type="time"
@@ -140,7 +153,6 @@ const AddModal = ({
           />
         )}
 
-        {/* New: Input for progress */}
         <label className="w-full text-sm">Progress: {taskData.progress}%</label>
         <input
           type="range"

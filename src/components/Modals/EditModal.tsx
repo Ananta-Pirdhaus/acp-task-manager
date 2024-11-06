@@ -89,7 +89,6 @@ const EditModal = ({
 
     handleEditTask(taskData);
     closeModal();
-
   };
 
   return (

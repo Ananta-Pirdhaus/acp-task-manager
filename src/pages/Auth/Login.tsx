@@ -1,16 +1,32 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate from React Router
 import { loginHandler } from "../../services/authService"; // Import login service function
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const navigate = useNavigate(); // Initialize the navigate function
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(""); // Reset error message
+    setSuccessMessage(""); // Reset success message
     try {
       const response = await loginHandler({ username, password });
-      console.log("Login successful", response);
+      if (response.status === "success") {
+        setSuccessMessage(response.message);
+        console.log("Login successful", response);
+
+        // Redirect to /main after successful login
+        navigate("/main");
+      } else {
+        setErrorMessage(response.message);
+      }
     } catch (error) {
+      setErrorMessage("An unexpected error occurred");
       console.error("Login failed", error);
     }
   };
@@ -44,6 +60,14 @@ const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                {errorMessage && (
+                  <p className="text-red-500 mt-3 text-sm">{errorMessage}</p>
+                )}
+                {successMessage && (
+                  <p className="text-green-500 mt-3 text-sm">
+                    {successMessage}
+                  </p>
+                )}
                 <button className="mt-5 tracking-wide font-semibold bg-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
                   <svg
                     className="w-6 h-6 -ml-2"
@@ -58,6 +82,23 @@ const Login: React.FC = () => {
                   </svg>
                   <span className="ml-3">Login</span>
                 </button>
+                <hr className="mb-6 border-t" />
+                <div className="text-center">
+                  <a
+                    className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800"
+                    href="#"
+                  >
+                    Forgot Password?
+                  </a>
+                </div>
+                <div className="text-center">
+                  <a
+                    className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800"
+                    href=""
+                  >
+                    Don't have an account? Register!
+                  </a>
+                </div>
               </form>
             </div>
           </div>
