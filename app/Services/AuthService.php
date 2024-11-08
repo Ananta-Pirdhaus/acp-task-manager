@@ -29,7 +29,6 @@ class AuthService
         try {
             $user = User::with('userRole', 'userRole.role')->where('username', $credentials['username'])->first();
             $konfig_fail = ConfigService::getConfig('FAIL_ATTEMPT');
-            // $konfig_one_time_login = ConfigService::getConfig('ONE_TIME_LOGIN');
 
             if (!$user) {
                 return [
@@ -66,7 +65,7 @@ class AuthService
                 ];
             }
 
-            // ! jika masih dalam waktu skors login 5 menit
+            // Verifikasi jika gagal login melebihi batas waktu
             if ($user->fail_login_count >= $konfig_fail->value) {
                 $then = Carbon::createFromFormat('Y-m-d H:i:s', $user->last_login);
                 if (!$then->addMinutes(5)->isPast()) {
@@ -79,30 +78,30 @@ class AuthService
                 }
             }
 
-            // ! login one time
-            // if ($konfig_one_time_login) {
-            //     Auth::logoutOtherDevices($credentials['password']);
-            // }
-
             $user->update([
                 'fail_login_count'  => 0,
                 'last_login'        => Carbon::now(),
             ]);
+
+            // Mendapatkan role aktif
             $roles = Role::select('role_id', 'role_name', 'role_description')
                 ->whereHas('userRole', function ($query) use ($user) {
                     $query->where('user_id', $user->user_id);
                 })->orderBy('role_id', 'asc')->get();
+
             $activeRole = $roles[0];
             $menu = self::getMenuRole($activeRole);
             $permissions = RoleService::getPermission($activeRole->role_id);
-            $token = auth()->claims(['role_active' => $activeRole])->login($user);
+
+            // Generate token JWT
+            $token = JWTAuth::fromUser($user, ['role_active' => $activeRole->role_name]);
 
             DB::commit();
+
             return [
                 'status' => true,
                 'data' => [
                     'user' => $user,
-                    // 'roles' => $roles,
                     'activeRole' => $activeRole,
                     'menu' => $menu,
                     'permissions' => $permissions,
@@ -118,22 +117,6 @@ class AuthService
         }
     }
 
-    /**
-     * logout
-     *
-     * @return void
-     */
-    public static function logout()
-    {
-        auth()->logout(true);
-    }
-
-    /**
-     * selectRole
-     *
-     * @param  mixed $roleId
-     * @return Array
-     */
     public static function selectRole($roleId): array
     {
         try {
@@ -148,14 +131,16 @@ class AuthService
             $menu = self::getMenuRole($role);
             $permissions = RoleService::getPermission($role->role_id);
             $user = auth()->user();
-            $token = auth()->claims(['role_active' => $role])->login($user);
+
+            // Generate token JWT
+            $token = JWTAuth::fromUser($user, ['role_active' => $role->role_name]);
 
             return [
                 'status' => true,
                 'data' => [
                     'role' => $role,
                     'menu' => $menu,
-                    'permission' => $permissions,
+                    'permissions' => $permissions,
                     'token' => $token,
                 ],
             ];
@@ -166,6 +151,7 @@ class AuthService
             ];
         }
     }
+
 
     /**
      * getMenuRole

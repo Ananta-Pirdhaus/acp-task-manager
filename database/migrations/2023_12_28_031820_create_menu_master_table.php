@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('menu_masters', function (Blueprint $table) {
-            $table->id('menu_master_id');
+            // ID untuk menu_master
+            $table->id('menu_master_id'); 
+
+            // Kolom-kolom lainnya
             $table->string('menu_master_name', 100)->nullable();
             $table->string('menu_master_type', 100)->nullable();
             $table->string('menu_master_icon', 100)->nullable();
@@ -22,6 +25,7 @@ return new class extends Migration
             $table->string('menu_master_slug', 100);
             $table->enum('status', ['ENABLE', 'DISABLE'])->nullable()->default('ENABLE');
             $table->timestamps();
+
             $table->bigInteger('created_by')->unsigned()->nullable();
             $table->bigInteger('updated_by')->unsigned()->nullable();
 
@@ -38,3 +42,4 @@ return new class extends Migration
         Schema::dropIfExists('menu_masters');
     }
 };
+

@@ -2,31 +2,40 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        \App\Models\User::create([
-            'username'   => 'smartsoft',
-            'password'   => bcrypt("admin"),
-            'path_photo' => '/storage/user_profile/default.png',
-            'name'       => 'Admin Smartsoft 1',
-        ]);
-        \App\Models\User::create([
-            'username'  => 'smartsoft2',
-            'password'   => bcrypt("admin"),
-            'name'       => 'Admin Smartsoft 2',
-        ]);
-        \App\Models\User::create([
-            'username'  => 'user',
-            'password'   => bcrypt("admin"),
-            'name'       => 'user',
+        \App\Models\User::insert([
+            [
+                'username' => 'admin',
+                'email' => 'admin@gmail.com',
+                'password' => bcrypt('admin123'),
+                'name' => 'admin',
+                'role_id' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'username' => 'user1',
+                'email' => 'user1@gmail.com',
+                'password' => bcrypt('user1123'),
+                'name' => 'user1',
+                'role_id' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'username' => 'user2',
+                'email' => 'user2@gmail.com',
+                'password' => bcrypt('user2123'),
+                'name' => 'user2',
+                'role_id' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

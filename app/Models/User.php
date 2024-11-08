@@ -1,79 +1,81 @@
 <?php
-// app/Models/User.php
+
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use App\Models\Role;
+use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
-    protected $primaryKey = "user_id";
+    use HasFactory, HasApiTokens;
 
+    protected $primaryKey = "user_id"; 
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
     protected $fillable = [
         'name',
+        'email',
         'username',
         'password',
-        'path_photo',
-        'status',
-        'token',
-        'fail_login_count',
-        'last_login',
+        'role_id', 
     ];
 
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
     protected $hidden = [
         'password',
         'token',
         'fail_login_count',
     ];
 
+    /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     *
+     * @return mixed
+     */
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
     public function getJWTCustomClaims()
     {
-        $roleActive = $this->userRole[0];
         return [
             'users' => [
                 'id'         => $this->user_id,
                 'username'   => $this->username,
                 'name'       => $this->name,
+                'role'       => $this->role ? $this->role->role_name : null,
             ],
         ];
     }
 
-    public function userRole(): HasMany
-    {
-        return $this->hasMany(UserRole::class, 'user_id', 'user_id');
-    }
 
-    public function tasks(): HasMany
+    /**
+     * Get all of the userRole for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function role(): BelongsTo
     {
-        return $this->hasMany(Task::class, 'assigned_to', 'user_id');
-    }
-
-    public function createdTasks(): HasMany
-    {
-        return $this->hasMany(Task::class, 'created_by', 'user_id');
-    }
-
-    public function comments(): HasMany
-    {
-        return $this->hasMany(Comment::class, 'user_id', 'user_id');
-    }
-
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(Role::class, 'role_assignments', 'user_id', 'role_id');
+        return $this->belongsTo(Role::class, 'role_id', 'role_id');
     }
 }
-
-
-?>

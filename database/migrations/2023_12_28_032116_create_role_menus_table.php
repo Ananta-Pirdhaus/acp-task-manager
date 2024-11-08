@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id('role_menu_id');
             $table->bigInteger('role_id')->unsigned()->nullable();
             $table->bigInteger('menu_master_id')->unsigned()->nullable();
-            // $table->integer('urutan_menu_master')->nullable();
             $table->timestamps();
             $table->bigInteger('created_by')->unsigned()->nullable();
             $table->bigInteger('updated_by')->unsigned()->nullable();
@@ -33,3 +32,4 @@ return new class extends Migration
         Schema::dropIfExists('role_menus');
     }
 };
+

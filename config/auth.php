@@ -14,11 +14,7 @@ return [
     */
 
     'defaults' => [
-<<<<<<< HEAD
         'guard' => 'api',
-=======
-        'guard' => 'web',
->>>>>>> 20da999 (second commit)
         'passwords' => 'users',
     ],
 
@@ -44,13 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-<<<<<<< HEAD
         'api' => [
             'driver' => 'jwt',
             'provider' => 'users',
         ],
-=======
->>>>>>> 20da999 (second commit)
     ],
 
     /*
@@ -74,6 +67,8 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
+            'username' => 'name',
+
         ],
 
         // 'users' => [
@@ -91,11 +86,7 @@ return [
     | than one user table or model in the application and you want to have
     | separate password reset settings based on the specific user types.
     |
-<<<<<<< HEAD
     | The expiry time is the number of minutes that each reset token will be
-=======
-    | The expire time is the number of minutes that each reset token will be
->>>>>>> 20da999 (second commit)
     | considered valid. This security feature keeps tokens short-lived so
     | they have less time to be guessed. You may change this as needed.
     |

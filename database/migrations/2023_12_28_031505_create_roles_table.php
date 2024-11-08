@@ -12,13 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('roles', function (Blueprint $table) {
-<<<<<<< HEAD
-            $table->increments('id');
-=======
-            $table->increments('role_id');
->>>>>>> 20da999 (second commit)
-            $table->string('name', 50)->unique();
-            $table->text('description')->nullable();
+            $table->bigIncrements('role_id');
+            $table->string('role_name', 100)->nullable();
+            $table->string('role_description', 100)->nullable();
+            $table->enum('status', ['ENABLE', 'DISABLE'])->nullable()->default('ENABLE');
+            $table->timestamps();
+            $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('updated_by')->nullable();
+
+            // $table->foreign('created_by')->references('user_id')->on('users')->onDelete('cascade');
+            // $table->foreign('updated_by')->references('user_id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -30,3 +33,4 @@ return new class extends Migration
         Schema::dropIfExists('roles');
     }
 };
+

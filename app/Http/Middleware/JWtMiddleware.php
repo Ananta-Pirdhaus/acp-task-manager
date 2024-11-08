@@ -14,11 +14,6 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class JWtMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next, $permission = ""): Response
     {
         try {
@@ -27,15 +22,12 @@ class JWtMiddleware
             if (!empty($permission) && !RolePermission::isHasPermission($roleActive['role_id'], $permission)) {
                 return ResponseFormatter::error(null, 'Anda tidak memiliki permission untuk mengakses ini', 403);
             }
-            // $userPayload = JWTAuth::parseToken()->getPayload()->get("users");
+        } catch (TokenInvalidException $e) {
+            return ResponseFormatter::error(null, "Token tidak valid: " . $e->getMessage(), 403);
+        } catch (TokenExpiredException $e) {
+            return ResponseFormatter::error(null, "Token expired", 403);
         } catch (Exception $e) {
-            if ($e instanceof TokenInvalidException) {
-                return ResponseFormatter::error(null, "Token tidak valid " . $e->getMessage(), 403);
-            } elseif ($e instanceof TokenExpiredException) {
-                return ResponseFormatter::error(null, "Token expired", 403);
-            } else {
-                return ResponseFormatter::error(null, "Silahkan login terlebih dahulu", 403);
-            }
+            return ResponseFormatter::error(null, "Silahkan login terlebih dahulu: " . $e->getMessage(), 403);
         }
         return $next($request);
     }

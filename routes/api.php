@@ -1,16 +1,14 @@
 <?php
 
-<<<<<<< HEAD
-use App\Http\Controllers\API\V1\ConfigController;
-use App\Http\Controllers\API\V1\MenuController;
-use App\Http\Controllers\API\V1\ReferenceController;
-use App\Http\Controllers\API\V1\RoleController;
-use App\Http\Controllers\API\V1\UserController;
-use App\Http\Controllers\AuthController;
-=======
->>>>>>> 20da999 (second commit)
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\V1\AuthController;
+use App\Http\Controllers\API\V1\MenuController;
+use App\Http\Controllers\API\V1\RoleController;
+use App\Http\Controllers\API\V1\UserController;
+use App\Http\Controllers\API\V1\ConfigController;
+use App\Http\Controllers\API\V1\ReferenceController;
+use App\Http\Controllers\API\V1\TaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,17 +21,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-<<<<<<< HEAD
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
 
 Route::prefix('v1')->group(function () {
-
     Route::prefix('auth')->group(function () {
         Route::get('/konfig-login', [ConfigController::class, 'konfig_login']);
         Route::post('/login', [AuthController::class, 'login']);
         Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/register', [AuthController::class, 'register']);
     });
 
     Route::prefix('user')->group(function () {
@@ -43,14 +40,14 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::prefix('roles')->group(function () {
-        Route::get('/', [RoleController::class, 'index'])->middleware(['auth.api:role_read']);
-        Route::post('/', [RoleController::class, 'store'])->middleware(['auth.api:role_create']);
-        Route::get('/{id}', [RoleController::class, 'show'])->middleware(['auth.api:role_read']);
-        Route::put('/{id}', [RoleController::class, 'update'])->middleware(['auth.api:role_update']);
+        Route::get('/', [RoleController::class, 'index'])->middleware(['auth:sanctum']);
+        Route::post('/', [RoleController::class, 'store'])->middleware(['auth:sanctum']);
+        Route::get('/{id}', [RoleController::class, 'show'])->middleware(['auth:sanctum']);
+        Route::put('/{id}', [RoleController::class, 'update'])->middleware(['auth:sanctum']);
         Route::put('/{id}/update-akses', [RoleController::class, 'updateRoleAkses'])->middleware(['auth.api:role_update']);
-        Route::delete('/{id}', [RoleController::class, 'destroy'])->middleware(['auth.api:role_delete']);
-        Route::put('/{id}/{status}', [RoleController::class, 'changeStatus'])->middleware(['auth.api:role_update']);
-        Route::get('/{id}/checkout', [RoleController::class, 'changeRole']);
+        Route::delete('/{id}', [RoleController::class, 'destroy'])->middleware(['auth:sanctum']);
+        Route::put('/{id}/{status}', [RoleController::class, 'changeStatus'])->middleware(['auth:sanctum']);
+        Route::get('/{id}/checkout', [RoleController::class, 'changeRole'])->middleware(['auth:sanctum']);
     });
 
     Route::prefix('menu')->group(function () {
@@ -75,8 +72,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/get-role-option', [ReferenceController::class, 'getRoleOption'])->middleware(['auth.api']);
         Route::get('/get-menu-access', [ReferenceController::class, 'getMenuAccess'])->middleware(['auth.api']);
     });
-=======
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
->>>>>>> 20da999 (second commit)
+
+    Route::get('tasks', [TaskController::class, 'index'])->middleware(['auth:sanctum']);
+    Route::post('tasks/{id}', [TaskController::class, 'store'])->middleware(['auth:sanctum']);
+    Route::get('tasks/{id}', [TaskController::class, 'show'])->middleware(['auth:sanctum']);
+    Route::put('tasks/{id}', [TaskController::class, 'update'])->middleware(['auth:sanctum']);
+    Route::delete('tasks/{id}', [TaskController::class, 'destroy'])->middleware(['auth:sanctum']);
 });

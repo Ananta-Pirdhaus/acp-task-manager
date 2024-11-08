@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\API\V1;
 
+use Illuminate\Http\Request;
+use App\Services\AuthService;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
-use App\Services\AuthService;
 use App\Services\Master\RoleService;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class RoleController extends Controller
@@ -131,20 +132,21 @@ class RoleController extends Controller
     {
         $data = RoleService::delete($id);
         if (!$data['status']) {
-            $erroCode = $data['errors'] == 'Not Found' ? 404 : 400;
+            $errorCode = $data['errors'] == 'Not Found' ? 404 : 400;
             return ResponseFormatter::error([
                 'errors' => $data['errors'],
-            ], 'delete data unsuccessful', $erroCode);
+            ], 'delete data unsuccessful', $errorCode);
         }
 
         return ResponseFormatter::success($data['data'], 'Successfully delete data');
     }
 
+
     public function changeStatus($id, $status)
     {
         if (!in_array($status, ['ENABLE', 'DISABLE'])) {
             return ResponseFormatter::error([
-                'error' => 'status hanya \'ENABLE\' & \'DISABLE\'',
+                'error' => 'Status hanya \'ENABLE\' & \'DISABLE\'',
             ], 'validation failed', 402);
         }
 
@@ -159,6 +161,7 @@ class RoleController extends Controller
         return ResponseFormatter::success($data['data'], 'Successfully update data');
     }
 
+
     public function changeRole($id)
     {
         $data = AuthService::selectRole($id);
@@ -170,5 +173,21 @@ class RoleController extends Controller
         }
 
         return ResponseFormatter::success($data['data'], 'change role successful');
+    }
+
+    public function redirectBasedOnRole()
+    {
+        $user = Auth::user();
+
+        switch ($user->role_id) {
+            case 1:
+                return redirect()->route('admin.dashboard');
+            case 2:
+                return redirect()->route('project_leader.dashboard');
+            case 3:
+                return redirect()->route('programming.dashboard');
+            default:
+                return redirect()->route('home');
+        }
     }
 }

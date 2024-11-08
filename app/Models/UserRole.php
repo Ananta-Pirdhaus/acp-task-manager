@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class UserRole extends Model
 {
     use HasFactory;
-    protected $primaryKey = 'user_role_id';
+
+    protected $primaryKey = 'user_roles_id';
     protected $guarded = [];
 
     /**
@@ -32,3 +33,4 @@ class UserRole extends Model
         return $this->belongsTo(Role::class, 'role_id', 'role_id');
     }
 }
+

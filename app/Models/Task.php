@@ -1,24 +1,49 @@
 <?php
+
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+
 class Task extends Model
 {
-    protected $fillable = ['title', 'description', 'status', 'priority', 'assigned_to', 'created_by', 'deadline'];
+    use HasFactory, HasUuids;
+    use HasFactory;
 
-    public function assignedTo()
+    protected $primaryKey = 'id'; 
+    public $incrementing = false; 
+    protected $keyType = 'string'; 
+
+    protected $fillable = [
+        'title',
+        'description',
+        'priority',
+        'startDate',
+        'endDate',
+        'startTime',
+        'endTime',
+        'image',
+        'alt',
+        'progress'
+    ];
+
+    public function getPriorityAttribute($value)
     {
-        return $this->belongsTo(User::class, 'assigned_to', 'user_id');
+        switch ($value) {
+            case 'high':
+                return 'Tinggi';
+            case 'medium':
+                return 'Sedang';
+            case 'low':
+                return 'Rendah';
+            default:
+                return $value;
+        }
     }
 
-    public function createdBy()
+    public function tags()
     {
-        return $this->belongsTo(User::class, 'created_by', 'user_id');
-    }
-
-    public function comments()
-    {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Tag::class);
     }
 }
-?>
