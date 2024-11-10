@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getRandomColors } from "../../helpers/getRandomColors";
 import { toast } from "react-toastify"; // Import toast for notifications
 import ToastProvider from "../../helpers/onNotifications"; // Import ToastProvider
+import { TaskT, Columns } from "../../types";
 
 // Interfaces remain unchanged...
 // [Your existing Tag and TaskData interfaces here]
@@ -12,12 +13,35 @@ const EditModal = ({
   setOpen,
   handleEditTask,
   currentTaskData,
-}: EditModalProps) => {
-  const [taskData, setTaskData] = useState<TaskData>(currentTaskData);
-  const [tagTitle, setTagTitle] = useState("");
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  handleEditTask: (task: TaskT) => void;
+  currentTaskData: TaskT | null;
+}) => {
+  const defaultTaskData: TaskT = {
+    id: "",
+    title: "",
+    description: "",
+    priority: "low",
+    startDate: "",
+    startTime: "",
+    endDate: "",
+    endTime: "",
+    progress: 0,
+    alt: "",
+    image: "",
+    tags: [],
+  };
+
+  const [taskData, setTaskData] = useState<TaskT>(
+    currentTaskData || defaultTaskData
+  );
+  const [tagTitle, setTagTitle] = useState<string>("");
 
   useEffect(() => {
-    setTaskData(currentTaskData); // Update task data from props
+    setTaskData(currentTaskData || defaultTaskData); // Update task data from props or use defaults
   }, [currentTaskData]);
 
   const handleChange = (
@@ -48,7 +72,7 @@ const EditModal = ({
     if (tagTitle.trim() === "") return;
 
     const { bg, text } = getRandomColors();
-    const newTag: Tag = { title: tagTitle.trim(), bg, text };
+    const newTag = { title: tagTitle.trim(), bg, text };
 
     // Avoid duplicate tags
     if (!taskData.tags.some((tag) => tag.title === newTag.title)) {
@@ -67,11 +91,11 @@ const EditModal = ({
   const closeModal = () => {
     setOpen(false);
     onClose();
-    setTaskData(currentTaskData); // Reset task data
+    setTaskData(currentTaskData || defaultTaskData); // Reset task data
   };
 
   const handleSubmit = () => {
-    const requiredFields = [
+    const requiredFields: (keyof TaskT)[] = [
       "title",
       "priority",
       "description",
@@ -80,15 +104,15 @@ const EditModal = ({
       "endDate",
       "endTime",
     ];
-    const isValid = requiredFields.every((field) => taskData[field]);
+    const isValid = requiredFields.every((field) => taskData[field] || "");
 
     if (!isValid) {
       toast.error("Please fill in all required fields."); // Notify error
       return;
     }
 
-    handleEditTask(taskData);
-    closeModal();
+    handleEditTask(taskData); // Pass taskData to parent function
+    closeModal(); // Close the modal
   };
 
   return (
@@ -109,7 +133,7 @@ const EditModal = ({
           name="progress"
           min="0"
           max="100"
-          value={taskData.progress}
+          value={taskData.progress || 0}
           onChange={handleChange}
           className="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer"
         />
@@ -117,7 +141,7 @@ const EditModal = ({
         <input
           type="text"
           name="title"
-          value={taskData.title}
+          value={taskData.title || ""}
           onChange={handleChange}
           placeholder="Title"
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm font-medium"
@@ -125,7 +149,7 @@ const EditModal = ({
         <input
           type="text"
           name="description"
-          value={taskData.description}
+          value={taskData.description || ""}
           onChange={handleChange}
           placeholder="Description"
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm font-medium"
@@ -133,7 +157,7 @@ const EditModal = ({
         <select
           name="priority"
           onChange={handleChange}
-          value={taskData.priority}
+          value={taskData.priority || ""}
           className="w-full h-12 px-2 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
         >
           <option value="">Priority</option>
@@ -144,28 +168,28 @@ const EditModal = ({
         <input
           type="date"
           name="startDate"
-          value={taskData.startDate}
+          value={taskData.startDate || ""}
           onChange={handleChange}
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
         />
         <input
           type="time"
           name="startTime"
-          value={taskData.startTime}
+          value={taskData.startTime || ""}
           onChange={handleChange}
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
         />
         <input
           type="date"
           name="endDate"
-          value={taskData.endDate}
+          value={taskData.endDate || ""}
           onChange={handleChange}
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
         />
         <input
           type="time"
           name="endTime"
-          value={taskData.endTime}
+          value={taskData.endTime || ""}
           onChange={handleChange}
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
         />
@@ -198,7 +222,7 @@ const EditModal = ({
           <input
             type="text"
             name="alt"
-            value={taskData.alt}
+            value={taskData.alt || ""}
             onChange={handleChange}
             placeholder="Image Alt"
             className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
@@ -211,14 +235,26 @@ const EditModal = ({
           />
         </div>
         {taskData.image && (
-          <img src={taskData.image} alt={taskData.alt} className="mt-2" />
+          <img
+            src={taskData.image}
+            alt={taskData.alt || "Uploaded Image"}
+            className="w-full h-60 object-cover rounded-md my-4"
+          />
         )}
-        <button
-          className="w-full rounded-md h-10 bg-green-500 text-amber-50 font-medium"
-          onClick={handleSubmit}
-        >
-          Save
-        </button>
+        <div className="w-full flex gap-3 justify-center">
+          <button
+            onClick={handleSubmit}
+            className="w-full py-2 rounded-md bg-blue-500 text-white"
+          >
+            Save Task
+          </button>
+          <button
+            onClick={closeModal}
+            className="w-full py-2 rounded-md bg-red-500 text-white"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );

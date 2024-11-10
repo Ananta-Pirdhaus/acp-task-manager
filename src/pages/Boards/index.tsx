@@ -8,28 +8,30 @@ import AddModal from "../../components/Modals/AddModal";
 import EditModal from "../../components/Modals/EditModal";
 import Task from "../../components/Task";
 import { toast } from "react-toastify";
-import ToastProvider from "../../helpers/onNotifications"; // Impor komponen ToastProvider
+import ToastProvider from "../../helpers/onNotifications"; // Import ToastProvider component
+import GenerateModal from "../../components/Modals/GenerateModal";
 
-// Fungsi untuk mengambil data dari localStorage
+// Function to get initial columns from localStorage
 const getInitialColumns = (): Columns => {
   const storedData = localStorage.getItem("taskBoard");
-  return storedData ? JSON.parse(storedData) : {}; // Kembalikan objek kosong jika tidak ada data
+  return storedData ? JSON.parse(storedData) : {}; // Return an empty object if no data is found
 };
 
 const Home = () => {
   const [columns, setColumns] = useState<Columns>(getInitialColumns());
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedColumn, setSelectedColumn] = useState("");
+  const [selectedColumn, setSelectedColumn] = useState<string>("");
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<any>(null);
+  const [showGenerareModal, setShowGenerareModal] = useState(false);
 
-  // Update localStorage setiap kali kolom diubah
+  // Update localStorage whenever the columns are changed
   useEffect(() => {
     localStorage.setItem("taskBoard", JSON.stringify(columns));
   }, [columns]);
 
-  const openModal = (columnId: any) => {
+  const openModal = (columnId: string) => {
     setSelectedColumn(columnId);
     setModalOpen(true);
   };
@@ -52,7 +54,7 @@ const Home = () => {
     const newBoard = { ...columns };
     newBoard[selectedColumn].items.push(taskData);
     setColumns(newBoard);
-    toast.success("Task added successfully!"); // Tampilkan notifikasi saat task ditambahkan
+    toast.success("Task added successfully!"); // Show notification when a task is added
   };
 
   const handleEditTask = (updatedTask: any) => {
@@ -77,7 +79,7 @@ const Home = () => {
 
     newColumns[columnId].items[taskIndex] = updatedTask;
     setColumns(newColumns);
-    toast.info("Task updated successfully!"); // Tampilkan notifikasi saat task diedit
+    toast.info("Task updated successfully!"); // Show notification when a task is updated
   };
 
   const handleDeleteTask = (taskId: any) => {
@@ -97,18 +99,18 @@ const Home = () => {
     );
 
     setColumns(newColumns); // Update state with new columns
-    toast.error("Task deleted successfully!"); // Tampilkan notifikasi saat task dihapus
+    toast.error("Task deleted successfully!"); // Show notification when a task is deleted
   };
 
   return (
     <>
       <ToastProvider options={{ position: "top-right", autoClose: 3000 }} />{" "}
-      {/* Tambahkan komponen ToastProvider */}
+      {/* Add ToastProvider component */}
       <DragDropContext
         onDragEnd={(result: any) => onDragEnd(result, columns, setColumns)}
       >
         <div className="w-full flex items-start justify-between px-5 pb-8 md:gap-2 gap-10">
-          {Object.entries(columns).map(([columnId, column]: any) => (
+          {Object.entries(columns).map(([columnId, column]: [string, any]) => (
             <div className="w-full flex flex-col gap-0" key={columnId}>
               <Droppable droppableId={columnId} key={columnId}>
                 {(provided: any) => (
@@ -151,6 +153,7 @@ const Home = () => {
           ))}
         </div>
       </DragDropContext>
+      {/* Modal Components */}
       <AddModal
         isOpen={modalOpen}
         onClose={closeModal}
@@ -166,6 +169,8 @@ const Home = () => {
           currentTaskData={selectedTask}
         />
       )}
+      {/* Generate Buttons with Tailwind Tooltip */}
+      <GenerateModal />
     </>
   );
 };

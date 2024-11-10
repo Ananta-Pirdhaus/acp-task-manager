@@ -7,6 +7,9 @@ import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
 import PrivateRoute from "../helpers/privateRoutes";
 import NotificationBoard from "../pages/Notifications";
+import Newsletter from "../pages/Admin/Analytics"; // Example admin-only pages
+import Workflow from "../pages/Admin/WorkFlow";
+import Analytics from "../pages/Admin/Analytics";
 
 const routes = (isAuthenticated: boolean): RouteObject[] => [
   {
@@ -73,6 +76,73 @@ const routes = (isAuthenticated: boolean): RouteObject[] => [
           <PrivateRoute
             element={<NotificationBoard />}
             isAuthenticated={isAuthenticated}
+          />
+        ),
+      },
+    ],
+  },
+  // Admin-only routes
+  {
+    path: "/admin/newsletter",
+    element: (
+      <PrivateRoute
+        element={<Layout />}
+        isAuthenticated={isAuthenticated}
+        isRole="admin"
+      />
+    ),
+    children: [
+      {
+        path: "",
+        element: (
+          <PrivateRoute
+            element={<Newsletter />}
+            isAuthenticated={isAuthenticated}
+            isRole="admin"
+          />
+        ),
+      },
+    ],
+  },
+  {
+    path: "/admin/workflow",
+    element: (
+      <PrivateRoute
+        element={<Layout />}
+        isAuthenticated={isAuthenticated}
+        isRole="admin"
+      />
+    ),
+    children: [
+      {
+        path: "",
+        element: (
+          <PrivateRoute
+            element={<Workflow />}
+            isAuthenticated={isAuthenticated}
+            isRole="admin"
+          />
+        ),
+      },
+    ],
+  },
+  {
+    path: "/admin/analytics",
+    element: (
+      <PrivateRoute
+        element={<Layout />}
+        isAuthenticated={isAuthenticated}
+        isRole="admin"
+      />
+    ),
+    children: [
+      {
+        path: "",
+        element: (
+          <PrivateRoute
+            element={<Analytics />}
+            isAuthenticated={isAuthenticated}
+            isRole="admin"
           />
         ),
       },
