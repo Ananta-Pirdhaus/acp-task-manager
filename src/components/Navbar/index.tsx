@@ -13,6 +13,7 @@ import { NotificationMenuItems } from "../Dropdown/notificationDropdown";
 
 const Navbar: React.FC = () => {
   const [highPriorityTasks, setHighPriorityTasks] = useState<TaskT[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Update the list of high-priority tasks
   const updateHighPriorityTasks = () => {
@@ -30,6 +31,10 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     updateHighPriorityTasks();
     window.addEventListener("storage", updateHighPriorityTasks); // Listen for changes to `localStorage`
+
+    const userData = localStorage.getItem("user");
+    const user = userData ? JSON.parse(userData) : null;
+    setIsAdmin(user?.role === "admin");
 
     return () => {
       window.removeEventListener("storage", updateHighPriorityTasks); // Cleanup on component unmount
@@ -66,21 +71,23 @@ const Navbar: React.FC = () => {
           <SettingsOutline color={"#444"} />
         </div>
 
-        {/* Notifications with Count */}
-        <Menu as="div" className="relative">
-          <Menu.Button className="grid place-items-center bg-gray-100 rounded-full p-2 cursor-pointer">
-            <NotificationsOutline color={"#444"} />
-            {/* Show notification count if there are high priority tasks */}
-            {highPriorityTasks.length > 0 && (
-              <span className="absolute top-[-5px] right-[-5px] bg-red-500 text-white text-xs rounded-full px-1">
-                {highPriorityTasks.length}
-              </span>
-            )}
-          </Menu.Button>
-          <Menu.Items className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg outline-none">
-            <NotificationMenuItems />
-          </Menu.Items>
-        </Menu>
+        {/* Notifications with Count - Only show for non-admins */}
+        {!isAdmin && (
+          <Menu as="div" className="relative">
+            <Menu.Button className="grid place-items-center bg-gray-100 rounded-full p-2 cursor-pointer">
+              <NotificationsOutline color={"#444"} />
+              {/* Show notification count if there are high priority tasks */}
+              {highPriorityTasks.length > 0 && (
+                <span className="absolute top-[-5px] right-[-5px] bg-red-500 text-white text-xs rounded-full px-1">
+                  {highPriorityTasks.length}
+                </span>
+              )}
+            </Menu.Button>
+            <Menu.Items className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg outline-none">
+              <NotificationMenuItems />
+            </Menu.Items>
+          </Menu>
+        )}
       </div>
     </div>
   );

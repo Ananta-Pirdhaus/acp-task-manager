@@ -15,7 +15,7 @@ const users: User[] = [
   },
   {
     username: "test1",
-    password: "user12345678",
+    password: "user123",
     role: "admin",
   },
   {
