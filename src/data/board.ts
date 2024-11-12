@@ -5,6 +5,7 @@ import taskImage2 from "../assets/images/task2.jpg";
 import taskImage3 from "../assets/images/task3.jpg";
 import { Columns } from "../types";
 import { getRandomColors } from "../helpers/getRandomColors";
+import { axiosInstance } from "../lib/axios";
 
 // Definisi objek Board dengan properti progress
 export const Board: Columns = {

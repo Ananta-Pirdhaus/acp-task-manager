@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginHandler } from "../../services/authService";
 import LoginImages from "../../assets/login_images.svg";
+import { toast } from "react-toastify"; // Import toast
+import ToastProvider from "../../helpers/onNotifications";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState(""); // Updated to 'email'
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -15,23 +17,43 @@ const Login: React.FC = () => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
+    if (!email || !password) {
+      setErrorMessage("Please fill in both email and password.");
+      toast.error("Please fill in both email and password.");
+      return;
+    }
+
     try {
-      const response = await loginHandler({ email, password }); // Pass email and password
+      const response = await loginHandler({ email, password });
+
       if (response.status === "success") {
         setSuccessMessage(response.message);
+
+        // Determine redirect path based on user role
+        const redirectPath =
+          response.role_name === "Administrator" ? "/admin/analytics" : "/main";
+
+        // Show success toast and navigate to the appropriate page after it closes
+        toast.success(response.message, {
+          onClose: () => navigate(redirectPath), // Navigate after the toast closes
+        });
+
         console.log("Login successful", response);
-        navigate("/main");
       } else {
         setErrorMessage(response.message);
+        toast.error(response.message); // Show error toast for failed login
       }
     } catch (error) {
       setErrorMessage("An unexpected error occurred");
+      toast.error("An unexpected error occurred"); // Show error toast for unexpected errors
       console.error("Login failed", error);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 flex justify-center">
+      <ToastProvider position="top-right" autoClose={5000} />{" "}
+      {/* Include ToastProvider */}
       <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow sm:rounded-lg flex justify-center flex-1">
         <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
           <div className="mt-12 flex flex-col items-center">
@@ -41,9 +63,9 @@ const Login: React.FC = () => {
                 <input
                   className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
                   type="text"
-                  placeholder="Email" // Updated placeholder to "Email"
+                  placeholder="Email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)} // Updated to setEmail
+                  onChange={(e) => setEmail(e.target.value)}
                 />
                 <input
                   className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"

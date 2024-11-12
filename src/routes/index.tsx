@@ -7,7 +7,7 @@ import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
 import PrivateRoute from "../helpers/privateRoutes";
 import NotificationBoard from "../pages/Notifications";
-import Newsletter from "../pages/Admin/Analytics"; // Example admin-only pages
+import Newsletter from "../pages/Admin/Newsletter"; // Example admin-only pages
 import Workflow from "../pages/Admin/WorkFlow";
 import Analytics from "../pages/Admin/Analytics";
 

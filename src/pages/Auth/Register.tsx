@@ -55,7 +55,7 @@ const Register: React.FC = () => {
       if (response.status === "success") {
         setRegistrationMessage(response.message);
         setUserInfo(response.data);
-        console.log("response register: ", response)
+        console.log("response register: ", response);
         // Redirect to login page after successful registration
         navigate("/login"); // Use navigate to redirect
       }
@@ -69,7 +69,7 @@ const Register: React.FC = () => {
     <div className="min-h-screen bg-gray-100 text-gray-900 flex justify-center">
       <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow sm:rounded-lg flex justify-center flex-1">
         <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
-          <div className="mt-12 flex flex-col items-center">
+          <div className=" flex flex-col items-center">
             <h1 className="text-2xl xl:text-3xl font-extrabold">Sign Up</h1>
             <div className="w-full flex-1 mt-8">
               <form onSubmit={handleRegister} className="mx-auto max-w-xs">
@@ -152,16 +152,6 @@ const Register: React.FC = () => {
               {registrationMessage && (
                 <div className="mt-4 text-center text-lg">
                   {registrationMessage}
-                </div>
-              )}
-
-              {userInfo && (
-                <div className="mt-4 text-center text-lg">
-                  <h3 className="font-bold">User Info:</h3>
-                  <p>Name: {userInfo.name}</p>
-                  <p>Username: {userInfo.username}</p>
-                  <p>Email: {userInfo.email}</p>
-                  <p>Role: {userInfo.role.role_name}</p>
                 </div>
               )}
             </div>
