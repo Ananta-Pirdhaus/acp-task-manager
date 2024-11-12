@@ -43,7 +43,7 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::prefix('roles')->group(function () {
-        Route::get('/', [RoleController::class, 'index'])->middleware(['auth:sanctum']);
+        Route::get('/', [RoleController::class, 'index']);
         Route::post('/', [RoleController::class, 'store'])->middleware(['auth:sanctum']);
         Route::get('/{id}', [RoleController::class, 'show'])->middleware(['auth:sanctum']);
         Route::put('/{id}', [RoleController::class, 'update'])->middleware(['auth:sanctum']);
@@ -52,6 +52,7 @@ Route::prefix('v1')->group(function () {
         Route::put('/{id}/{status}', [RoleController::class, 'changeStatus'])->middleware(['auth:sanctum']);
         Route::get('/{id}/checkout', [RoleController::class, 'changeRole'])->middleware(['auth:sanctum']);
     });
+
 
     Route::prefix('menu')->group(function () {
         Route::get('/', [MenuController::class, 'index'])->middleware(['auth.api:menu_master_read']);
