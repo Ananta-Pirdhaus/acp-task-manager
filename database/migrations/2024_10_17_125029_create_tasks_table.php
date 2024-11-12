@@ -9,10 +9,10 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('tasks', function (Blueprint $table) {
-            $table->uuid('id')->primary(); 
+            $table->uuid('id')->primary();
             $table->string('title');
             $table->text('description');
             $table->enum('priority', ['high', 'medium', 'low']);
@@ -22,9 +22,11 @@ return new class extends Migration
             $table->time('endTime')->nullable();
             $table->string('image')->nullable();
             $table->string('alt')->nullable();
-            // Hapus kolom tags
             $table->integer('progress')->default(0);
             $table->timestamps();
+
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -36,3 +38,4 @@ return new class extends Migration
         Schema::dropIfExists('tasks');
     }
 };
+

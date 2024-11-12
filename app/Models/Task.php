@@ -11,11 +11,11 @@ class Task extends Model
     use HasFactory, HasUuids;
     use HasFactory;
 
-    protected $primaryKey = 'id'; 
-    public $incrementing = false; 
-    protected $keyType = 'string'; 
-
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
     protected $fillable = [
+        'id',
         'title',
         'description',
         'priority',
@@ -25,7 +25,8 @@ class Task extends Model
         'endTime',
         'image',
         'alt',
-        'progress'
+        'progress',
+        'user_id'
     ];
 
     public function getPriorityAttribute($value)
@@ -45,5 +46,10 @@ class Task extends Model
     public function tags()
     {
         return $this->hasMany(Tag::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 }

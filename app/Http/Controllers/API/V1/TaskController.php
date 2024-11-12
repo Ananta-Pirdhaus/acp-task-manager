@@ -8,6 +8,7 @@ use App\Models\Task;
 use Ramsey\Uuid\Uuid;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
@@ -39,26 +40,41 @@ class TaskController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'alt' => 'nullable|string|max:255',
             'progress' => 'required|integer|min:0|max:100',
-            'tags' => 'nullable|array',
-            'tags.*.title' => 'required|string|max:255',
-            'tags.*.color' => 'required|string|max:255',
+            'tags' => 'present|array',
+            'tags.*.title' => 'required_with:tags|string|max:255',
+            'tags.*.color' => 'required_with:tags|string|max:255',
         ]);
 
-        // Proses penyimpanan task
-        $uuid = Uuid::uuid4()->toString();
-        $task = Task::create(array_merge(
-            $request->except('tags', 'image'),
-            ['id' => $uuid]
-        ));
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not authenticated.'
+            ], 401);
+        }
 
-        // Cek jika file gambar ada dan valid
+        $uuid = Uuid::uuid4()->toString();
+
+        $task = Task::create([
+            'id' => $uuid,
+            'title' => $request->title,
+            'description' => $request->description,
+            'priority' => $request->priority,
+            'startDate' => $request->startDate,
+            'endDate' => $request->endDate,
+            'startTime' => $request->startTime,
+            'endTime' => $request->endTime,
+            'image' => $imageName ?? null,
+            'alt' => $request->alt ?? null,
+            'progress' => $request->progress,
+            'user_id' => $user->user_id,
+        ]);
+
         if ($request->hasFile('image') && $request->image->isValid()) {
             $imageName = time() . '.' . $request->image->extension();
             $request->image->move(public_path('images'), $imageName);
             $task->image = $imageName;
         }
-
-        // Simpan tags jika ada
         if ($request->has('tags')) {
             foreach ($request->tags as $tagData) {
                 $tagUuid = Uuid::uuid4()->toString();
@@ -80,71 +96,80 @@ class TaskController extends Controller
     }
 
 
-    public function show(Task $task)
+    public function show($id)
     {
+        $user = Auth::user();
 
-        if (!$task) {
+        $task = Task::find($id);
+        if (!$task || $task->user_id !== $user->user_id) {
             return response()->json([
                 'status' => false,
-                'message' => 'Task not found'
+                'message' => 'Task not found or you do not have access to this task.'
             ], 404);
         }
+
 
         return response()->json([
             'status' => true,
             'data' => $task
-        ]);
+        ], 200);
     }
-
 
     public function update(Request $request, $id)
     {
-        try {
-            $task = Task::findOrFail($id);
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'priority' => 'required|in:high,medium,low',
+            'startDate' => 'required|date',
+            'endDate' => 'required|date',
+            'startTime' => 'required|date_format:H:i',
+            'endTime' => 'nullable|date_format:H:i',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'alt' => 'nullable|string|max:255',
+            'progress' => 'required|integer|min:0|max:100',
+            'tags' => 'present|array',
+            'tags.*.title' => 'required_with:tags|string|max:255',
+            'tags.*.color' => 'required_with:tags|string|max:255',
+        ]);
 
-            $request->validate([
-                'title' => 'required|string|max:255',
-                'priority' => 'required|in:high,medium,low',
-                'startDate' => 'required|date',
-                'endDate' => 'required|date',
-                'startTime' => 'required|date_format:H:i',
-                'progress' => 'required|integer|min:0|max:100',
-                'tags.*.title' => 'required|string|max:255',
-                'tags.*.color' => 'required|string|max:255',
-            ]);
+        $task = Task::find($id);
 
-            $task->update($request->except('tags', 'image'));
-
-            if ($request->hasFile('image')) {
-                $imageName = time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images'), $imageName);
-                $task->image = $imageName;
-                $task->save();
-            }
-
-            if ($request->has('tags')) {
-                $task->tags()->delete();
-                foreach ($request->tags as $tagData) {
-                    $task->tags()->create($tagData);
-                }
-            }
-
-            $task->load('tags');
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Task berhasil diperbarui!',
-                'data' => $task
-            ]);
-        } catch (\Exception $e) {
+        if (!$task) {
             return response()->json([
                 'status' => false,
-                'message' => 'Error: ' . $e->getMessage()
-            ], 500);
+                'message' => 'Task tidak ditemukan.'
+            ], 404);
         }
+
+        $task->update($request->except('tags', 'image'));
+
+        if ($request->hasFile('image') && $request->image->isValid()) {
+            $imageName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('images'), $imageName);
+            $task->image = $imageName;
+            $task->save();
+        }
+
+        if ($request->has('tags')) {
+            $task->tags()->delete();
+            foreach ($request->tags as $tagData) {
+                $tagUuid = Uuid::uuid4()->toString();
+                Tag::create([
+                    'id' => $tagUuid,
+                    'task_id' => $task->id,
+                    'title' => $tagData['title'],
+                    'color' => $tagData['color'],
+                ]);
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $task,
+            'message' => 'Task berhasil diperbarui!'
+        ], 200);
     }
-
-
 
     public function destroy($id)
     {
@@ -153,15 +178,27 @@ class TaskController extends Controller
         if (!$task) {
             return response()->json([
                 'status' => false,
-                'message' => 'Task not found'
+                'message' => 'Task tidak ditemukan.'
             ], 404);
         }
 
+        $task->tags()->delete();
         $task->delete();
+
         return response()->json([
             'status' => true,
             'message' => 'Task berhasil dihapus!'
         ], 200);
     }
 
+    public function getUserTasks()
+    {
+        $user = Auth::user();
+        $tasks = $user->tasks;
+
+        return response()->json([
+            'status' => true,
+            'data' => $tasks
+        ]);
+    }
 }

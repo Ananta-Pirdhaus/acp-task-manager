@@ -27,7 +27,7 @@ class RoleController extends Controller
         $per_page = $request->input('per_page', 10);
 
         $data = RoleService::getAllPaginate($filter, $page, $per_page, $sort_field, $sort_order);
-        return ResponseFormatter::success($data["data"], 'Get data successful');
+        return ResponseFormatter::success($data["data"], 'Get data succesful');
     }
 
     /**
