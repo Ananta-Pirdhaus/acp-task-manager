@@ -5,6 +5,8 @@ import {
   NewspaperOutline,
   PeopleOutline,
   PieChartOutline,
+  GridOutline,
+  NotificationsOutline,
 } from "react-ionicons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -15,12 +17,14 @@ const Sidebar = () => {
 
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Check if the user is admin based on localStorage
   useEffect(() => {
     const userData = localStorage.getItem("user");
     const user = userData ? JSON.parse(userData) : null;
-    setIsAdmin(user?.role === "admin");
+    setIsAdmin(user?.role_name === "Administrator"); // Ensure the role_name is used correctly
   }, []);
 
+  // Handle user logout
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/login");
@@ -57,6 +61,11 @@ const Sidebar = () => {
       icon: <AppsOutline color="#555" width="22px" height="22px" />,
       path: "/boards",
     },
+    {
+      title: "Projects",
+      icon: <GridOutline color="#555" width="22px" height="22px" />,
+      path: "/project",
+    },
   ];
 
   // Choose which links to display based on role
@@ -64,7 +73,7 @@ const Sidebar = () => {
 
   return (
     <div className="fixed left-0 top-0 md:w-[230px] w-[60px] overflow-hidden h-full flex flex-col z-10">
-      <div className="w-full flex items-center md:justify-start justify-center md:pl-5 h-[70px] bg-[#fff]">
+      <div className="w-full flex items-center md:justify-start justify-center md:pl-5 h-[70px] bg-white">
         <span className="text-orange-400 font-semibold text-2xl md:block hidden">
           Logo.
         </span>
@@ -72,7 +81,7 @@ const Sidebar = () => {
           L.
         </span>
       </div>
-      <div className="w-full h-[calc(100vh-70px)] border-r flex flex-col md:items-start items-center gap-2 border-slate-300 bg-[#fff] py-5 md:px-3 px-3 relative">
+      <div className="w-full h-[calc(100vh-70px)] border-r flex flex-col md:items-start items-center gap-2 border-slate-300 bg-white py-5 md:px-3 px-3 relative">
         {navLinks.map((link) => {
           const isActive = location.pathname === link.path;
           return (
@@ -94,7 +103,7 @@ const Sidebar = () => {
           className="flex absolute bottom-4 items-center md:justify-start justify-center gap-2 md:w-[90%] w-[70%] rounded-lg hover:bg-orange-300 px-2 py-3 cursor-pointer bg-gray-200 w-full"
           onClick={handleLogout}
         >
-          <LogOutOutline />
+          <LogOutOutline color="#555" width="22px" height="22px" />
           <span className="font-medium text-[15px] md:block hidden">
             Log Out
           </span>

@@ -1,26 +1,25 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate from React Router
-import { loginHandler } from "../../services/authService"; // Import login service function
+import { useNavigate } from "react-router-dom";
+import { loginHandler } from "../../services/authService";
+import LoginImages from "../../assets/login_images.svg";
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState(""); // Updated to 'email'
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const navigate = useNavigate(); // Initialize the navigate function
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(""); // Reset error message
-    setSuccessMessage(""); // Reset success message
+    setErrorMessage("");
+    setSuccessMessage("");
     try {
-      const response = await loginHandler({ username, password });
+      const response = await loginHandler({ email, password }); // Pass email and password
       if (response.status === "success") {
         setSuccessMessage(response.message);
         console.log("Login successful", response);
-
-        // Redirect to /main after successful login
         navigate("/main");
       } else {
         setErrorMessage(response.message);
@@ -35,13 +34,6 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-gray-100 text-gray-900 flex justify-center">
       <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow sm:rounded-lg flex justify-center flex-1">
         <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
-          <div>
-            <img
-              src="https://storage.googleapis.com/devitary-image-host.appspot.com/15846435184459982716-LogoMakr_7POjrN.png"
-              className="w-32 mx-auto"
-              alt="Logo"
-            />
-          </div>
           <div className="mt-12 flex flex-col items-center">
             <h1 className="text-2xl xl:text-3xl font-extrabold">Login</h1>
             <div className="w-full flex-1 mt-8">
@@ -49,9 +41,9 @@ const Login: React.FC = () => {
                 <input
                   className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
                   type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Email" // Updated placeholder to "Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)} // Updated to setEmail
                 />
                 <input
                   className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
@@ -68,7 +60,7 @@ const Login: React.FC = () => {
                     {successMessage}
                   </p>
                 )}
-                <button className="mt-5 tracking-wide font-semibold bg-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
+                <button className="mt-5 tracking-wide font-semibold bg-orange-500 text-gray-100 w-full py-4 rounded-lg hover:bg-orange-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
                   <svg
                     className="w-6 h-6 -ml-2"
                     fill="none"
@@ -85,7 +77,7 @@ const Login: React.FC = () => {
                 <hr className="mb-6 border-t" />
                 <div className="text-center">
                   <a
-                    className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800"
+                    className="inline-block text-sm text-orange-500 dark:text-orange-500 align-baseline hover:text-orange-800"
                     href="#"
                   >
                     Forgot Password?
@@ -93,8 +85,8 @@ const Login: React.FC = () => {
                 </div>
                 <div className="text-center">
                   <a
-                    className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800"
-                    href=""
+                    className="inline-block text-sm text-orange-500 dark:text-orange-500 align-baseline hover:text-orange-800"
+                    href="/register"
                   >
                     Don't have an account? Register!
                   </a>
@@ -103,12 +95,11 @@ const Login: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="flex-1 bg-indigo-100 text-center hidden lg:flex">
+        <div className="flex-1 bg-orange-200 text-center hidden lg:flex">
           <div
             className="m-12 xl:m-16 w-full bg-contain bg-center bg-no-repeat"
             style={{
-              backgroundImage:
-                "url('https://storage.googleapis.com/devitary-image-host.appspot.com/15848031292911696601-undraw_designer_life_w96d.svg')",
+              backgroundImage: `url(${LoginImages})`,
             }}
           />
         </div>

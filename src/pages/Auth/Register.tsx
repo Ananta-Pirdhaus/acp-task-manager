@@ -1,24 +1,67 @@
-import React, { useState } from "react";
-import { registerHandler } from "../../services/authService"; // Import register service function
+import React, { useState, useEffect } from "react";
+import { registerHandler } from "../../services/authService";
+import RegisterImages from "../../assets/register_images.svg";
+import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const Register: React.FC = () => {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [position, setPosition] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [roleId, setRoleId] = useState<number | null>(null);
+  const [roles, setRoles] = useState<{ role_id: number; role_name: string }[]>(
+    []
+  );
+  const [registrationMessage, setRegistrationMessage] = useState("");
+  const [userInfo, setUserInfo] = useState<any>(null);
+
+  const navigate = useNavigate(); // Initialize navigate
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/api/v1/roles");
+        if (response.data.meta.code === 200) {
+          setRoles(response.data.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching roles", error);
+      }
+    };
+
+    fetchRoles();
+  }, []);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password !== passwordConfirmation) {
+      setRegistrationMessage("Passwords do not match");
+      return;
+    }
+
     try {
       const response = await registerHandler({
         name,
         username,
+        email,
         password,
-        position,
+        password_confirmation: passwordConfirmation,
+        role_id: roleId!,
       });
-      console.log("Registration successful", response);
+
+      if (response.status === "success") {
+        setRegistrationMessage(response.message);
+        setUserInfo(response.data);
+        console.log("response register: ", response)
+        // Redirect to login page after successful registration
+        navigate("/login"); // Use navigate to redirect
+      }
     } catch (error) {
       console.error("Registration failed", error);
+      setRegistrationMessage("Registration failed. Please try again.");
     }
   };
 
@@ -26,17 +69,11 @@ const Register: React.FC = () => {
     <div className="min-h-screen bg-gray-100 text-gray-900 flex justify-center">
       <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow sm:rounded-lg flex justify-center flex-1">
         <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
-          <div>
-            <img
-              src="https://storage.googleapis.com/devitary-image-host.appspot.com/15846435184459982716-LogoMakr_7POjrN.png"
-              className="w-32 mx-auto"
-              alt="Logo"
-            />
-          </div>
           <div className="mt-12 flex flex-col items-center">
             <h1 className="text-2xl xl:text-3xl font-extrabold">Sign Up</h1>
             <div className="w-full flex-1 mt-8">
               <form onSubmit={handleRegister} className="mx-auto max-w-xs">
+                {/* Form fields */}
                 <input
                   className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
                   type="text"
@@ -51,18 +88,13 @@ const Register: React.FC = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
-                <select
+                <input
                   className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                  value={position}
-                  onChange={(e) => setPosition(e.target.value)}
-                >
-                  <option value="" disabled>
-                    Select Position
-                  </option>
-                  <option value="developer">Developer</option>
-                  <option value="designer">Designer</option>
-                  <option value="manager">Manager</option>
-                </select>
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
                 <input
                   className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
                   type="password"
@@ -70,7 +102,28 @@ const Register: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <button className="mt-5 tracking-wide font-semibold bg-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
+                <input
+                  className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={passwordConfirmation}
+                  onChange={(e) => setPasswordConfirmation(e.target.value)}
+                />
+                <select
+                  className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
+                  value={roleId ?? ""}
+                  onChange={(e) => setRoleId(Number(e.target.value))}
+                >
+                  <option value="" disabled>
+                    Select Position
+                  </option>
+                  {roles.map((role) => (
+                    <option key={role.role_id} value={role.role_id}>
+                      {role.role_name}
+                    </option>
+                  ))}
+                </select>
+                <button className="mt-5 tracking-wide font-semibold bg-orange-500 text-gray-100 w-full py-4 rounded-lg hover:bg-orange-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
                   <svg
                     className="w-6 h-6 -ml-2"
                     fill="none"
@@ -86,25 +139,39 @@ const Register: React.FC = () => {
                   <span className="ml-3">Sign Up</span>
                 </button>
                 <hr className="mb-6 border-t" />
-
                 <div className="text-center">
                   <a
-                    className="inline-block text-sm text-blue-500 dark:text-blue-500 align-baseline hover:text-blue-800"
+                    className="inline-block text-sm text-orange-500 dark:text-orange-500 align-baseline hover:text-orange-800"
                     href="/login"
                   >
                     Already have an account? Login!
                   </a>
                 </div>
               </form>
+
+              {registrationMessage && (
+                <div className="mt-4 text-center text-lg">
+                  {registrationMessage}
+                </div>
+              )}
+
+              {userInfo && (
+                <div className="mt-4 text-center text-lg">
+                  <h3 className="font-bold">User Info:</h3>
+                  <p>Name: {userInfo.name}</p>
+                  <p>Username: {userInfo.username}</p>
+                  <p>Email: {userInfo.email}</p>
+                  <p>Role: {userInfo.role.role_name}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
-        <div className="flex-1 bg-indigo-100 text-center hidden lg:flex">
+        <div className="flex-1 bg-orange-100 text-center hidden lg:flex">
           <div
             className="m-12 xl:m-16 w-full bg-contain bg-center bg-no-repeat"
             style={{
-              backgroundImage:
-                "url('https://storage.googleapis.com/devitary-image-host.appspot.com/15848031292911696601-undraw_designer_life_w96d.svg')",
+              backgroundImage: `url(${RegisterImages})`,
             }}
           />
         </div>

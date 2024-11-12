@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { TimeOutline, PencilOutline, TrashBinOutline } from "react-ionicons";
+import {
+  TimeOutline,
+  EyeOutline,
+  PencilOutline,
+  TrashBinOutline,
+} from "react-ionicons";
 import { TaskT } from "../../types";
 import { DraggableProvided } from "react-beautiful-dnd"; // Import the correct type
 import { useEffect, useState } from "react";
@@ -9,9 +14,10 @@ interface TaskProps {
   provided: DraggableProvided; // Use DraggableProvided type instead of 'any'
   onEdit: () => void;
   onDelete: () => void;
+  onView: () => void; // Add onView function prop
 }
 
-const Task = ({ task, provided, onEdit, onDelete }: TaskProps) => {
+const Task = ({ task, provided, onEdit, onDelete, onView }: TaskProps) => {
   const {
     title,
     description,
@@ -124,6 +130,10 @@ const Task = ({ task, provided, onEdit, onDelete }: TaskProps) => {
           }`}
         ></div>
         <div className="flex gap-3 items-center">
+          {/* View button */}
+          <button onClick={onView} className="flex items-center text-gray-600">
+            <EyeOutline color={"#666"} />
+          </button>
           {/* Edit button */}
           <button onClick={onEdit} className="flex items-center text-gray-600">
             <PencilOutline color={"#666"} />

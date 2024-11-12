@@ -12,27 +12,7 @@ import Workflow from "../pages/Admin/WorkFlow";
 import Analytics from "../pages/Admin/Analytics";
 
 const routes = (isAuthenticated: boolean): RouteObject[] => [
-  {
-    path: "/boards",
-    element: (
-      <PrivateRoute element={<Layout />} isAuthenticated={isAuthenticated} />
-    ),
-    children: [
-      {
-        path: "",
-        element: (
-          <PrivateRoute
-            element={<Boards />}
-            isAuthenticated={isAuthenticated}
-          />
-        ),
-      },
-    ],
-  },
-  {
-    path: "/main",
-    element: <Navigate to="/" />,
-  },
+  // Protected routes
   {
     path: "/",
     element: (
@@ -45,16 +25,17 @@ const routes = (isAuthenticated: boolean): RouteObject[] => [
           <PrivateRoute element={<Main />} isAuthenticated={isAuthenticated} />
         ),
       },
-    ],
-  },
-  {
-    path: "/project",
-    element: (
-      <PrivateRoute element={<Layout />} isAuthenticated={isAuthenticated} />
-    ),
-    children: [
       {
-        path: "",
+        path: "/boards",
+        element: (
+          <PrivateRoute
+            element={<Boards />}
+            isAuthenticated={isAuthenticated}
+          />
+        ),
+      },
+      {
+        path: "/project",
         element: (
           <PrivateRoute
             element={<Project />}
@@ -62,16 +43,8 @@ const routes = (isAuthenticated: boolean): RouteObject[] => [
           />
         ),
       },
-    ],
-  },
-  {
-    path: "/notifications",
-    element: (
-      <PrivateRoute element={<Layout />} isAuthenticated={isAuthenticated} />
-    ),
-    children: [
       {
-        path: "",
+        path: "/notifications",
         element: (
           <PrivateRoute
             element={<NotificationBoard />}
@@ -81,73 +54,52 @@ const routes = (isAuthenticated: boolean): RouteObject[] => [
       },
     ],
   },
-  // Admin-only routes
+
+  // Admin-only protected routes
   {
-    path: "/admin/newsletter",
+    path: "/admin",
     element: (
       <PrivateRoute
         element={<Layout />}
         isAuthenticated={isAuthenticated}
-        isRole="admin"
+        isRole="Administrator"
       />
     ),
     children: [
       {
-        path: "",
+        path: "newsletter",
         element: (
           <PrivateRoute
             element={<Newsletter />}
             isAuthenticated={isAuthenticated}
-            isRole="admin"
+            isRole="Administrator"
           />
         ),
       },
-    ],
-  },
-  {
-    path: "/admin/workflow",
-    element: (
-      <PrivateRoute
-        element={<Layout />}
-        isAuthenticated={isAuthenticated}
-        isRole="admin"
-      />
-    ),
-    children: [
       {
-        path: "",
+        path: "workflow",
         element: (
           <PrivateRoute
             element={<Workflow />}
             isAuthenticated={isAuthenticated}
-            isRole="admin"
+            isRole="Administrator"
           />
         ),
       },
-    ],
-  },
-  {
-    path: "/admin/analytics",
-    element: (
-      <PrivateRoute
-        element={<Layout />}
-        isAuthenticated={isAuthenticated}
-        isRole="admin"
-      />
-    ),
-    children: [
       {
-        path: "",
+        path: "analytics",
         element: (
           <PrivateRoute
             element={<Analytics />}
             isAuthenticated={isAuthenticated}
-            isRole="admin"
+            isRole="Administrator"
           />
         ),
       },
     ],
   },
+
+  // Public routes
   {
     path: "/login",
     element: <Login />,
@@ -155,6 +107,12 @@ const routes = (isAuthenticated: boolean): RouteObject[] => [
   {
     path: "/register",
     element: <Register />,
+  },
+
+  // Redirect for main route
+  {
+    path: "/main",
+    element: <Navigate to="/" />,
   },
 ];
 

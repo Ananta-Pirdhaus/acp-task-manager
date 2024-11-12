@@ -165,6 +165,9 @@ const GenerateModal = () => {
                         <p className="text-sm font-bold">
                           Priority: {task.priority}
                         </p>
+                        <p className="text-sm font-semibold">
+                          Progress: {task.progress}%
+                        </p>
                       </li>
                     ))}
                   </ul>

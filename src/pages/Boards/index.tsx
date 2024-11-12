@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useState, useEffect } from "react";
-import { Columns } from "../../types";
+import { Columns, TaskData } from "../../types";
 import { onDragEnd } from "../../helpers/onDragEnd";
 import { AddOutline } from "react-ionicons";
 import AddModal from "../../components/Modals/AddModal";
 import EditModal from "../../components/Modals/EditModal";
+import ViewModal from "../../components/Modals/ViewModal";
 import Task from "../../components/Task";
 import { toast } from "react-toastify";
 import ToastProvider from "../../helpers/onNotifications"; // Import ToastProvider component
@@ -21,10 +22,11 @@ const Home = () => {
   const [columns, setColumns] = useState<Columns>(getInitialColumns());
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<string>("");
-  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [selectedTask, setSelectedTask] = useState<TaskData | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<any>(null);
-  const [showGenerareModal, setShowGenerareModal] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
 
   // Update localStorage whenever the columns are changed
   useEffect(() => {
@@ -40,9 +42,16 @@ const Home = () => {
     setModalOpen(false);
   };
 
-  const openEditModal = (task: any) => {
-    setSelectedTask(task);
-    setEditModalOpen(true);
+  const openViewTaskModal = (task: TaskData) => {
+    setSelectedTask(task); // Set the selected task details
+    setViewModalOpen(true); // Open the View Modal
+    setEditModalOpen(false); // Ensure the Edit Modal is closed
+  };
+
+  const openEditModal = (task: TaskData) => {
+    setSelectedTask(task); // Set the selected task details
+    setEditModalOpen(true); // Open the Edit Modal
+    setViewModalOpen(false); // Ensure the View Modal is closed
   };
 
   const closeEditModal = () => {
@@ -50,14 +59,14 @@ const Home = () => {
     setSelectedTask(null);
   };
 
-  const handleAddTask = (taskData: any) => {
+  const handleAddTask = (taskData: TaskData) => {
     const newBoard = { ...columns };
     newBoard[selectedColumn].items.push(taskData);
     setColumns(newBoard);
     toast.success("Task added successfully!"); // Show notification when a task is added
   };
 
-  const handleEditTask = (updatedTask: any) => {
+  const handleEditTask = (updatedTask: TaskData) => {
     const newColumns = { ...columns };
 
     const columnId = Object.keys(newColumns).find((id) =>
@@ -132,6 +141,7 @@ const Home = () => {
                           <Task
                             provided={provided}
                             task={task}
+                            onView={() => openViewTaskModal(task)}
                             onEdit={() => openEditModal(task)}
                             onDelete={() => handleDeleteTask(task.id)} // Pass delete function
                           />
@@ -161,15 +171,21 @@ const Home = () => {
         handleAddTask={handleAddTask}
       />
       {selectedTask && (
-        <EditModal
-          isOpen={editModalOpen}
-          onClose={closeEditModal}
-          setOpen={setEditModalOpen}
-          handleEditTask={handleEditTask}
-          currentTaskData={selectedTask}
-        />
+        <>
+          <EditModal
+            isOpen={editModalOpen}
+            onClose={closeEditModal}
+            setOpen={setEditModalOpen}
+            handleEditTask={handleEditTask}
+            currentTaskData={selectedTask}
+          />
+          <ViewModal
+            isOpen={viewModalOpen}
+            onClose={() => setViewModalOpen(false)} // Close the correct modal
+            task={selectedTask} // Pass the selected task to the modal
+          />
+        </>
       )}
-      {/* Generate Buttons with Tailwind Tooltip */}
       <GenerateModal />
     </>
   );

@@ -15,18 +15,18 @@ const users: User[] = [
   },
   {
     username: "test1",
-    password: "user123",
+    password: "test123",
     role: "admin",
   },
   {
-    username: "jane_smith",
-    password: "password456",
+    username: "user1",
+    password: "user456",
     role: "user",
   },
   {
     username: "michael_brown",
     password: "password789",
-    role: "moderator",
+    role: "manager",
   },
 ];
 
