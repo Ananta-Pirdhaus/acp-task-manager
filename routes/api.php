@@ -31,7 +31,7 @@ Route::get('/test', function () {
 Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::get('/konfig-login', [ConfigController::class, 'konfig_login']);
-        Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/login', [AuthController::class, 'login'])->name('api.auth.login');
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/register', [AuthController::class, 'register']);
     });
@@ -79,7 +79,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('tasks', [TaskController::class, 'index']);
         Route::post('tasks', [TaskController::class, 'store']);
-        Route::get('tasks/{id}', [TaskController::class, 'show']);
+        Route::get('tasks/show', [TaskController::class, 'show']);
         Route::put('tasks/{id}', [TaskController::class, 'update']);
         Route::delete('tasks/{id}', [TaskController::class, 'destroy']);
     });

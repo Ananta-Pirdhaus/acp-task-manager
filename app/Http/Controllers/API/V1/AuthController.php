@@ -38,11 +38,9 @@ class AuthController extends Controller
             'role_id' => $request->role_id,
         ]);
 
-        $token = $user->createToken('YourAppName')->plainTextToken;
 
         return response()->json([
             'message' => 'Registration successful',
-            'token' => $token,
             'user' => [
                 'user_id' => $user->user_id,
                 'name' => $user->name,

@@ -96,23 +96,32 @@ class TaskController extends Controller
     }
 
 
-    public function show($id)
+    public function show(Request $request)
     {
-        $user = Auth::user();
+        Log::info('User yang login:', ['user_id' => Auth::id()]);
+        try {
+            $user = Auth::user();
+            $tasks = Task::where('user_id', $user->user_id)->with('tags')->get();
 
-        $task = Task::find($id);
-        if (!$task || $task->user_id !== $user->user_id) {
+            if ($tasks->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No tasks found for this user.'
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => true,
+                'data' => $tasks
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error fetching tasks:', ['error' => $e->getMessage()]);
+
             return response()->json([
                 'status' => false,
-                'message' => 'Task not found or you do not have access to this task.'
-            ], 404);
+                'message' => 'Internal Server Error'
+            ], 500);
         }
-
-
-        return response()->json([
-            'status' => true,
-            'data' => $task
-        ], 200);
     }
 
     public function update(Request $request, $id)
