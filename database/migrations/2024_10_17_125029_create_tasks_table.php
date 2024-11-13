@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateTasksTable extends Migration
 {
     /**
      * Run the migrations.
@@ -25,6 +25,7 @@ return new class extends Migration
             $table->integer('progress')->default(0);
             $table->timestamps();
 
+            // User relationship with unsignedBigInteger for compatibility
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
         });
@@ -33,8 +34,8 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('tasks');
     }
-};
+}
