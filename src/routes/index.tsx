@@ -10,6 +10,9 @@ import NotificationBoard from "../pages/Notifications";
 import Newsletter from "../pages/Admin/Newsletter"; // Example admin-only pages
 import Workflow from "../pages/Admin/WorkFlow";
 import Analytics from "../pages/Admin/Analytics";
+import ProjectLeaderDashboard from "../pages/ProjectLeader/ProjectLeaderDashboard";
+import TaskDetails from "../pages/ProjectLeader/TaskDetails";
+import UserTaskPage from "../pages/ProjectLeader/UserTask";
 
 const routes = (isAuthenticated: boolean): RouteObject[] => [
   // Protected routes
@@ -49,6 +52,50 @@ const routes = (isAuthenticated: boolean): RouteObject[] => [
           <PrivateRoute
             element={<NotificationBoard />}
             isAuthenticated={isAuthenticated}
+          />
+        ),
+      },
+    ],
+  },
+
+  // Project-Leader-only protected routes
+  {
+    path: "/project-leader",
+    element: (
+      <PrivateRoute
+        element={<Layout />}
+        isAuthenticated={isAuthenticated}
+        isRole="Project Leader"
+      />
+    ),
+    children: [
+      {
+        path: "dashboard",
+        element: (
+          <PrivateRoute
+            element={<ProjectLeaderDashboard />}
+            isAuthenticated={isAuthenticated}
+            isRole="Project Leader"
+          />
+        ),
+      },
+      {
+        path: "task-detail",
+        element: (
+          <PrivateRoute
+            element={<TaskDetails />}
+            isAuthenticated={isAuthenticated}
+            isRole="Project Leader"
+          />
+        ),
+      },
+      {
+        path: "user-task",
+        element: (
+          <PrivateRoute
+            element={<UserTaskPage />}
+            isAuthenticated={isAuthenticated}
+            isRole="Project Leader"
           />
         ),
       },

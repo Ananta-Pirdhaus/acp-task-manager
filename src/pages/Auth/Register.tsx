@@ -22,7 +22,7 @@ const Register: React.FC = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/v1/roles");
+        const response = await axios.get("/api/roles");
         if (response.data.meta.code === 200) {
           setRoles(response.data.data.data);
         }

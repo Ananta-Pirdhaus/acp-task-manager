@@ -31,7 +31,11 @@ const Login: React.FC = () => {
 
         // Determine redirect path based on user role
         const redirectPath =
-          response.role_name === "Administrator" ? "/admin/analytics" : "/main";
+          response.role_name === "Administrator"
+            ? "/admin/analytics"
+            : response.role_name === "Project Leader"
+            ? "/project-leader/dashboard"
+            : "/main";
 
         // Show success toast and navigate to the appropriate page after it closes
         toast.success(response.message, {

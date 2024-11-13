@@ -6,7 +6,6 @@ import {
   PeopleOutline,
   PieChartOutline,
   GridOutline,
-  NotificationsOutline,
 } from "react-ionicons";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -15,13 +14,13 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState("");
 
-  // Check if the user is admin based on localStorage
+  // Check the user's role from localStorage
   useEffect(() => {
     const userData = localStorage.getItem("user");
     const user = userData ? JSON.parse(userData) : null;
-    setIsAdmin(user?.role_name === "Administrator"); // Ensure the role_name is used correctly
+    setUserRole(user?.role_name || ""); // Get the role_name
   }, []);
 
   // Handle user logout
@@ -49,7 +48,26 @@ const Sidebar = () => {
     },
   ];
 
-  // User-specific links
+  // Project Leader-specific links
+  const projectLeaderLinks = [
+    {
+      title: "Project Dashboard",
+      icon: <GridOutline color="#555" width="22px" height="22px" />,
+      path: "/project-leader/dashboard",
+    },
+    {
+      title: "Task Details",
+      icon: <AppsOutline color="#555" width="22px" height="22px" />,
+      path: "/project-leader/task-detail",
+    },
+    {
+      title: "User Tasks",
+      icon: <PeopleOutline color="#555" width="22px" height="22px" />,
+      path: "/project-leader/user-task",
+    },
+  ];
+
+  // User-specific links (general user)
   const userLinks = [
     {
       title: "Home",
@@ -68,19 +86,29 @@ const Sidebar = () => {
     },
   ];
 
-  // Choose which links to display based on role
-  const navLinks = isAdmin ? adminLinks : userLinks;
+  // Determine which links to show based on the user's role
+  let navLinks = [];
+  if (userRole === "Administrator") {
+    navLinks = adminLinks;
+  } else if (userRole === "Project Leader") {
+    navLinks = projectLeaderLinks;
+  } else {
+    navLinks = userLinks;
+  }
 
   return (
-    <div className="fixed left-0 top-0 md:w-[230px] w-[60px] overflow-hidden h-full flex flex-col z-10">
+    <div className="fixed left-0 top-0 md:w-[230px] w-[60px] overflow-hidden h-full flex flex-col z-10 transition-all duration-300 ease-in-out">
+      {/* Logo Section */}
       <div className="w-full flex items-center md:justify-start justify-center md:pl-5 h-[70px] bg-white">
         <span className="text-orange-400 font-semibold text-2xl md:block hidden">
-          Logo.
+          Logo
         </span>
         <span className="text-orange-400 font-semibold text-2xl md:hidden block">
-          L.
+          L
         </span>
       </div>
+
+      {/* Navigation Links Section */}
       <div className="w-full h-[calc(100vh-70px)] border-r flex flex-col md:items-start items-center gap-2 border-slate-300 bg-white py-5 md:px-3 px-3 relative">
         {navLinks.map((link) => {
           const isActive = location.pathname === link.path;
@@ -99,6 +127,8 @@ const Sidebar = () => {
             </Link>
           );
         })}
+
+        {/* Logout Button */}
         <div
           className="flex absolute bottom-4 items-center md:justify-start justify-center gap-2 md:w-[90%] w-[70%] rounded-lg hover:bg-orange-300 px-2 py-3 cursor-pointer bg-gray-200 w-full"
           onClick={handleLogout}
