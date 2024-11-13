@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE'],  // Limit to the methods you need.
 
-    'allowed_origins' => ['https://your-frontend-app.com'],  // Replace with your frontend domain, e.g., 'https://example.com'.
+    'allowed_origins' => ['http://localhost:5173'],  // Replace with your frontend domain, e.g., 'https://example.com'.
 
     'allowed_origins_patterns' => [],  // You can use regex patterns here if needed.
 
