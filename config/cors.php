@@ -15,20 +15,20 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],  // Apply CORS rules to API routes and Sanctum CSRF cookie.
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE'],  // Limit to the methods you need.
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['https://your-frontend-app.com'],  // Replace with your frontend domain, e.g., 'https://example.com'.
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [],  // You can use regex patterns here if needed.
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['Content-Type', 'Authorization', 'X-Requested-With'],  // Limit to headers you expect to receive.
 
-    'exposed_headers' => [],
+    'exposed_headers' => [],  // You can add headers that should be exposed to the client.
 
-    'max_age' => 0,
+    'max_age' => 3600,  // Cache the results of preflight requests for 1 hour (3600 seconds).
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,  // Set to true if your app requires cookies or authorization headers.
 
 ];

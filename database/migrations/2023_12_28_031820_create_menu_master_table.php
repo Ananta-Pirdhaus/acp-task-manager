@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('menu_masters', function (Blueprint $table) {
             // ID untuk menu_master
-            $table->id('menu_master_id'); 
+            $table->id('menu_master_id');
 
             // Kolom-kolom lainnya
             $table->string('menu_master_name', 100)->nullable();
@@ -42,4 +42,3 @@ return new class extends Migration
         Schema::dropIfExists('menu_masters');
     }
 };
-

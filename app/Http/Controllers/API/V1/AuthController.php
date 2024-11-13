@@ -51,7 +51,6 @@ class AuthController extends Controller
         ], 201);
     }
 
-
     /**
      * Handle user login.   
      */
@@ -68,13 +67,15 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->first();
+
         if (!$user) {
             Log::warning('User not found for email: ' . $request->email);
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
+
         if (!Hash::check($request->password, $user->password)) {
             Log::warning('Invalid password for email: ' . $request->email);
-            return response()->json(['message' => 'emai atau password salah'], 401);
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
         $token = $user->createToken('YourAppName')->plainTextToken;
@@ -91,7 +92,6 @@ class AuthController extends Controller
             ],
         ], 200);
     }
-
 
     public function showLoginForm()
     {

@@ -9,20 +9,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class UserService
 {
     /**
-     * return model query
+     * Ambil data user semua dengan filter dan pagination
      *
-     * @param  null
-     * @return object query model
+     * @param array $filter
+     * @param int $page
+     * @param int $per_page
+     * @param string $sort_field
+     * @param string $sort_order
+     * @return array
      */
-    public static function dataAll()
-    {
-        return User::query();
-    }
-
     public static function getAllPaginate($filter = [], $page = 1, $per_page = 10, $sort_field = 'created_at', $sort_order = 'desc')
     {
         $query = User::query();
@@ -58,58 +58,44 @@ class UserService
     }
 
     /**
-     * create new user
+     * Membuat user baru
      *
-     * @param  array $payload
-     * @return array status and warning
+     * @param array $payload
+     * @return array
      */
     public static function create($payload)
     {
         DB::beginTransaction();
         try {
-            $photo = '/storage/user_profile/default.png';
-            if ($payload['path_photo'] != "") {
-                $path_file = $payload['path_photo'];
-                $explode_file = explode("/", $path_file);
-                $name_file = $explode_file[3];
+            $validator = Validator::make($payload, [
+                'name' => 'required|string|max:255',
+                'username' => 'required|string|max:255|unique:users',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:8',
+                'role' => 'required|array', 
+            ]);
 
-                $explode_name_file = explode(".", $name_file);
-                $ext_file = $explode_name_file[1];
-                if (Storage::disk('public')->exists('temporary_file/' . $name_file)) {
-                    $name_file_new = "user_profile-" . Carbon::now()->format('Ymd_H_i_s') . "." . $ext_file;
-                    $moved = 'public/user-profile/' . $name_file_new;
-                    Storage::move('public/temporary_file/' . $name_file, $moved);
-                    $url_foto = Storage::url($moved);
-                }
-                $photo = $url_foto;
+            if ($validator->fails()) {
+                return [
+                    'status' => false,
+                    'errors' => $validator->errors(),
+                ];
             }
 
             $user = User::create([
                 'name' => $payload['name'],
                 'username' => $payload['username'],
+                'email' => $payload['email'],
                 'password' => Hash::make($payload['password']),
-                'path_photo' => $photo,
                 'status' => "ENABLE",
                 'fail_login_count' => 0,
-                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-                'created_by' => Auth::user()->user_id,
+                'role_id' => $payload['role'][0],
+                'created_at' => Carbon::now(),
+                'created_by' => isset($payload['created_by']) ? $payload['created_by'] : 1,
             ]);
 
-            if ($payload['role']) {
-                $data_user_role = [];
-                foreach (json_decode($payload['role']) as $role_id) {
-                    $role_menu = [
-                        'user_id' => $user->user_id,
-                        'role_id' => $role_id,
-                        'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-                        'created_by' => Auth::user()->user_id,
-                    ];
-                    array_push($data_user_role, $role_menu);
-                }
-                UserRole::insert($data_user_role);
-            }
-
             DB::commit();
+
             return [
                 'status' => true,
                 'data'   => $user,
@@ -123,13 +109,20 @@ class UserService
         }
     }
 
+
+    /**
+     * Ambil data user berdasarkan ID
+     *
+     * @param $id
+     * @return array
+     */
     public static function getById($id): array
     {
         try {
             $data = User::with('userRole')->where("user_id", $id)->first();
             return [
                 'status' => true,
-                'data'   => $data,
+                'data' => $data,
             ];
         } catch (\Throwable $th) {
             return [
@@ -140,10 +133,10 @@ class UserService
     }
 
     /**
-     * edit role
+     * Update data user
      *
-     * @param  mixed $payload
-     * @param  mixed $id
+     * @param array $payload
+     * @param $id
      * @return array
      */
     public static function edit(array $payload, $id): array
@@ -151,147 +144,27 @@ class UserService
         DB::beginTransaction();
         try {
             $data = User::where('user_id', $id)->first();
-            if (empty($data)) {
+            if (!$data) {
                 return [
                     'status' => false,
-                    'errors' => "not found",
-                ];
-            } else {
-                $update_data = [
-                    'name' => $payload['name'],
-                    'username' => $payload['username'],
-                    'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-                    'updated_by' => Auth::user()->user_id,
-                ];
-
-                if ($payload['path_photo'] != "") {
-                    $path_file = $payload['path_photo'];
-                    $explode_file = explode("/", $path_file);
-                    $name_file = $explode_file[3];
-
-                    $explode_name_file = explode(".", $name_file);
-                    $ext_file = $explode_name_file[1];
-                    if (Storage::disk('public')->exists('temporary_file/' . $name_file)) {
-                        $name_file_new = "user_profile-" . Carbon::now()->format('Ymd_H_i_s') . "." . $ext_file;
-                        $moved = 'public/user-profile/' . $name_file_new;
-                        Storage::move('public/temporary_file/' . $name_file, $moved);
-                        $url_foto = Storage::url($moved);
-                    }
-                    $update_data['path_photo'] = $url_foto;
-                }
-
-                if ($payload['password'] != "") {
-                    $update_data['password'] = Hash::make($payload['password']);
-                }
-                $data->update($update_data);
-
-                if ($payload['role']) {
-                    foreach (json_decode($payload['role']) as $role_id) {
-                        $data_user_role = UserRole::where([
-                            ['user_id', $id],
-                            ['role_id', $role_id],
-                        ])->first();
-                        if ($data_user_role) {
-                            $data_user_role->update([
-                                'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-                                'updated_by' => Auth::user()->user_id
-                            ]);
-                        } else {
-                            UserRole::create([
-                                'user_id' => $id,
-                                'role_id' => $role_id,
-                                'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-                                'created_by' => Auth::user()->user_id,
-                            ]);
-                        }
-                    }
-
-                    $notUserRole = UserRole::where('user_id', $id)->whereNotIn('role_id', json_decode($payload['role']))->get();
-                    if ($notUserRole) {
-                        $notUserRoleId = [];
-                        foreach ($notUserRole as $not_menu_id) {
-                            array_push($notUserRoleId, $not_menu_id->user_role_id);
-                        }
-                        UserRole::whereIn('user_role_id', $notUserRoleId)->delete();
-                    }
-                }
-
-                DB::commit();
-                return [
-                    'status' => true,
-                    'data'   => $data,
+                    'errors' => 'User not found',
                 ];
             }
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return [
-                'status' => false,
-                'errors' => $th->getMessage(),
-            ];
-        }
-    }
 
-    /**
-     * changeStatus
-     *
-     * @param  mixed $id
-     * @param  boolean $status - ENABLE | DISABLE
-     * @return array
-     */
-    public static function changeStatus($id, $status)
-    {
-        DB::beginTransaction();
-        try {
-            $data = User::where(['user_id' => $id])->first();
-            if (empty($data)) {
-                return [
-                    'status' => false,
-                    'errors' => "Data tidak ditemukan.",
-                ];
-            } else {
-                $data->update([
-                    "status" => $status,
-                    "updated_at" => Carbon::now()->format("Y-m-d H:i:s"),
-                    "updated_by" => Auth::user()->user_id,
-                ]);
-                DB::commit();
-                return [
-                    'status' => true,
-                    'data'   => $data,
-                ];
-            }
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return [
-                'status' => false,
-                'errors' => $th->getMessage(),
-            ];
-        }
-    }
+            $data->update([
+                'name' => $payload['name'] ?? $data->name,
+                'username' => $payload['username'] ?? $data->username,
+                'password' => isset($payload['password']) ? Hash::make($payload['password']) : $data->password,
+            ]);
 
-    /**
-     * delete role
-     *
-     * @param  mixed $id
-     * @return array
-     */
-    public static function delete($id): array
-    {
-        DB::beginTransaction();
-        try {
-            $data = User::where('user_id', $id)->first();
-            if (empty($data)) {
-                return [
-                    'status' => false,
-                    'errors' => "not found",
-                ];
+            if (isset($payload['role'])) {
+                self::assignRoles($payload['role'], $data->user_id);
             }
-            $data->delete();
 
             DB::commit();
             return [
                 'status' => true,
-                'data'   => true,
+                'data' => $data,
             ];
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -302,18 +175,84 @@ class UserService
         }
     }
 
-    private static function assignRoles($roles, $user_id)
+    /**
+     * Assign roles ke user
+     *
+     * @param array $roles
+     * @param $user_id
+     * @return void
+     */
+    public static function assignRoles(array $roles, $user_id)
     {
-        $selected_roles = json_decode($roles);
-        // delete roles
-        UserRole::where('id_user', $user_id)->delete();
-
-        // assign role
-        foreach ($selected_roles as $role_id) {
+        UserRole::where('user_id', $user_id)->delete();
+        foreach ($roles as $role_id) {
             UserRole::create([
-                'id_user' => $user_id,
-                'id_role' => $role_id,
+                'user_id' => $user_id,
+                'role_id' => $role_id,
             ]);
+        }
+    }
+
+    /**
+     * Menghapus user berdasarkan ID
+     *
+     * @param $id
+     * @return array
+     */
+    public static function delete($id)
+    {
+        DB::beginTransaction();
+        try {
+            $data = User::where("user_id", $id)->first();
+            if (!$data) {
+                return [
+                    'status' => false,
+                    'errors' => 'User not found',
+                ];
+            }
+
+            $data->delete();
+            DB::commit();
+            return [
+                'status' => true,
+            ];
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return [
+                'status' => false,
+                'errors' => $th->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Mengubah status user (ENABLE/DISABLE)
+     *
+     * @param $id
+     * @param $status
+     * @return array
+     */
+    public static function changeStatus($id, $status)
+    {
+        try {
+            $user = User::where("user_id", $id)->first();
+            if (!$user) {
+                return [
+                    'status' => false,
+                    'errors' => 'User not found',
+                ];
+            }
+
+            $user->update(['status' => strtoupper($status)]);
+            return [
+                'status' => true,
+                'data' => $user,
+            ];
+        } catch (\Throwable $th) {
+            return [
+                'status' => false,
+                'errors' => $th->getMessage(),
+            ];
         }
     }
 }

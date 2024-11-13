@@ -5,10 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\V1\AuthController;
 use App\Http\Controllers\API\V1\MenuController;
 use App\Http\Controllers\API\V1\RoleController;
+use App\Http\Controllers\API\V1\TaskController;
 use App\Http\Controllers\API\V1\UserController;
 use App\Http\Controllers\API\V1\ConfigController;
 use App\Http\Controllers\API\V1\ReferenceController;
-use App\Http\Controllers\API\V1\TaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,10 +36,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
     });
 
-    Route::prefix('user')->group(function () {
-        Route::get('/', [UserController::class, 'index'])->middleware(['auth.api']);
-        Route::post('/', [UserController::class, 'store'])->middleware(['auth.api']);
-        Route::put('/{id}', [UserController::class, 'update'])->middleware(['auth.api']);
+    Route::prefix('users')->group(function () {
+        Route::get('user', [UserController::class, 'getAllUsers']);
+        Route::post('/', [UserController::class, 'store']);
+        Route::put('/{id}', [UserController::class, 'update']);
+        Route::delete('/{id}', [UserController::class, 'destroy']);
     });
 
     Route::prefix('roles')->group(function () {
