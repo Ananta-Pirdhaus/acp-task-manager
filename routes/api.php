@@ -81,7 +81,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('tasks', [TaskController::class, 'index']);
         Route::post('tasks', [TaskController::class, 'store']);
-        Route::get('tasks/show', [TaskController::class, 'show']);
+        Route::get('tasks', [TaskController::class, 'show']);
         Route::put('tasks/{id}', [TaskController::class, 'update']);
         Route::delete('tasks/{id}', [TaskController::class, 'destroy']);
     });

@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tags', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('task_id');
-            $table->string('title');
-            $table->string('color');
-
-            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
+        Schema::create('priorities', function (Blueprint $table) {
+            $table->id();
+            $table->string('priority')->unique(); 
+            $table->timestamps();
         });
     }
 
@@ -26,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tags');
+        Schema::dropIfExists('priorities');
     }
 };

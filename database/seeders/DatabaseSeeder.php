@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Database\Seeders\CustomersSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -25,5 +24,8 @@ class DatabaseSeeder extends Seeder
         $this->call(UserRoleSeeder::class);
         $this->call(RoleMenuSeeder::class);
         $this->call(RolePermissionSeeder::class);
+        $this->call(TaskTypeSeeder::class);
+        $this->call(PrioritySeeder::class);
+        
     }
 }

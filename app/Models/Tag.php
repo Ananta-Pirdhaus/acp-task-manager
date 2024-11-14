@@ -11,9 +11,9 @@ class Tag extends Model
     use HasFactory, HasUuids;
     use HasFactory;
 
-    protected $primaryKey = 'id'; 
-    public $incrementing = false; 
-    protected $keyType = 'string'; 
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
     public $timestamps = false;
 
     protected $fillable = [
@@ -22,10 +22,8 @@ class Tag extends Model
         'color'
     ];
 
-    // Relasi dengan model Task
     public function task()
     {
         return $this->belongsTo(Task::class);
     }
-
 }
