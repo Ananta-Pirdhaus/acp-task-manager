@@ -34,6 +34,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/login', [AuthController::class, 'login'])->name('api.auth.login');
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/register', [AuthController::class, 'register']);
+        Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     });
 
     Route::prefix('users')->group(function () {

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Password;
 
 class AuthController extends Controller
 {
@@ -155,5 +156,28 @@ class AuthController extends Controller
             throw new \Illuminate\Validation\ValidationException($validator);
         }
     }
-}
 
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+        $user = User::where('email', $request->email)->first();
+
+        if ($user) {
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Password berhasil diperbarui.',
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Email tidak ditemukan.',
+            ], 404);
+        }
+    }
+}
