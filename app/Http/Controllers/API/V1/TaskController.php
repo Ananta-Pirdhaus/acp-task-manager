@@ -109,7 +109,7 @@ class TaskController extends Controller
         try {
             $user = Auth::user();
             $tasks = Task::with(['taskType', 'tags'])
-            ->where('user_id', $user->user_id)
+                ->where('user_id', $user->user_id)
                 ->get();
 
             if ($tasks->isEmpty()) {
@@ -138,7 +138,7 @@ class TaskController extends Controller
     public function update(Request $request, $uuid)
     {
         try {
-            $request->validate([
+            $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'task_type' => 'required|string|in:Todo,Doing,Done',
@@ -163,7 +163,28 @@ class TaskController extends Controller
                 ], 404);
             }
 
-            $imageName = $task->image;
+            $taskTypeId = TaskType::where('type', $request->task_type)->first()->id ?? null;
+
+            if (!$taskTypeId) {
+                Log::warning('Task type ID not found for task type:', ['task_type' => $request->task_type]);
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid task type.',
+                ], 400);
+            }
+
+            $task->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'task_type_id' => $taskTypeId,
+                'priority' => $request->priority,
+                'startDate' => $request->startDate,
+                'endDate' => $request->endDate,
+                'startTime' => $request->startTime,
+                'endTime' => $request->endTime,
+                'progress' => $request->progress,
+            ]);
+
             if ($request->hasFile('image') && $request->image->isValid()) {
                 if ($task->image && file_exists(public_path('images/' . $task->image))) {
                     unlink(public_path('images/' . $task->image));
@@ -171,42 +192,31 @@ class TaskController extends Controller
 
                 $imageName = time() . '.' . $request->image->extension();
                 $request->image->move(public_path('images'), $imageName);
+                $task->image = $imageName;
             }
-
-            $task->update([
-                'title' => $request->title,
-                'description' => $request->description,
-                'task_type' => $request->task_type,
-                'priority' => $request->priority,
-                'startDate' => $request->startDate,
-                'endDate' => $request->endDate,
-                'startTime' => $request->startTime,
-                'endTime' => $request->endTime,
-                'progress' => $request->progress,
-                'image' => $imageName,
-                'alt' => $request->alt ?? $task->alt,
-            ]);
 
             $task->tags()->delete();
             if ($request->has('tags')) {
                 foreach ($request->tags as $tagData) {
-                    $tagUuid = Uuid::uuid4()->toString();
-                    Tag::create([
-                        'id' => $tagUuid,
-                        'task_id' => $task->id,
-                        'title' => $tagData['title'],
-                        'color' => $tagData['color'],
-                    ]);
+                    if (!empty($tagData['title']) && !empty($tagData['color'])) {
+                        $tag = new Tag();
+                        $tag->title = $tagData['title'];
+                        $tag->color = $tagData['color'];
+                        $tag->task_id = $task->id;
+                        $tag->save();
+                    }
                 }
             }
 
+            $task->load('tags', 'taskType');
+
             return response()->json([
                 'status' => true,
-                'data' => $task->load('tags', 'taskType'),
-                'message' => 'Task created successfully.',
-            ], 201);
+                'data' => $task,
+                'message' => 'Task updated successfully.',
+            ], 200);
         } catch (\Exception $e) {
-            Log::error('Error creating task:', [
+            Log::error('Error updating task:', [
                 'error' => $e->getMessage(),
                 'stack' => $e->getTraceAsString()
             ]);
