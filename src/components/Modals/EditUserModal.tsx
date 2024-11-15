@@ -58,6 +58,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       );
       if (response.data.meta.status === "success") {
         toast.success("User updated successfully!"); // Success toast
+        console.log("DATA UPDATE USER:", response.data);
         setShowModal(false); // Close modal after success
       } else {
         toast.error("Failed to update user: " + response.data.meta.message); // Error toast

@@ -1,33 +1,22 @@
-import React, { useState } from "react";
-import { Columns, TaskT } from "../../types";
+import React, { useState, useEffect } from "react";
+import { TaskT, TagT } from "../../types"; // Ensure TaskT and TagT types are correctly defined
 import AddModal from "../../components/Modals/AddModal";
 import EditModal from "../../components/Modals/EditModal";
 import { toast } from "react-toastify"; // Import toast for notifications
 import ToastProvider from "../../helpers/onNotifications";
+import { axiosInstance } from "../../lib/axios";
+import { getRandomColors } from "../../helpers/getRandomColors";
 
-// Helper function to fetch project data from localStorage
-const getProjectDataFromLocalStorage = (): TaskT[] => {
-  const storedData = localStorage.getItem("taskBoard");
-  if (storedData) {
-    const board: Columns = JSON.parse(storedData);
-    return Object.values(board).flatMap((column) =>
-      column.items.map((item) => ({
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        priority: item.priority,
-        startDate: item.startDate,
-        endDate: item.endDate,
-        startTime: item.startTime,
-        endTime: item.endTime,
-        tags: item.tags,
-        progress: item.progress,
-        image: item.image,
-        alt: item.alt,
-      }))
-    );
+// Function to fetch tasks from the backend
+const fetchProjectData = async (): Promise<TaskT[]> => {
+  try {
+    const response = await axiosInstance.get("/tasks"); // Replace with your actual API endpoint
+    return response.data.data; // Assuming the data array is in response.data.data
+  } catch (error) {
+    console.error("Error fetching tasks", error);
+    toast.error("Gagal memuat data tugas!");
+    return []; // Return an empty array in case of an error
   }
-  return [];
 };
 
 // Function to calculate project duration
@@ -61,11 +50,20 @@ const calculateDuration = (
 };
 
 const Project: React.FC = () => {
-  const projectData: TaskT[] = getProjectDataFromLocalStorage();
-
+  const [projectData, setProjectData] = useState<TaskT[]>([]);
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<TaskT | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const getTasks = async () => {
+      const tasks = await fetchProjectData();
+      setProjectData(tasks);
+      setLoading(false); // Set loading to false once data is fetched
+    };
+    getTasks();
+  }, []);
 
   const openAddModal = () => setAddModalOpen(true);
   const openEditModal = (project: TaskT) => {
@@ -80,26 +78,29 @@ const Project: React.FC = () => {
 
   // Function to handle adding a task
   const handleAddTask = (task: TaskT) => {
-    // Logic to add task (e.g., update localStorage, API, etc.)
-    console.log("Task added", task);
+    setProjectData((prevTasks) => [...prevTasks, task]);
     toast.success("Task berhasil ditambahkan!"); // Show success notification
     closeModals();
   };
 
   // Function to handle editing a task
   const handleEditTask = (task: TaskT) => {
-    // Logic to edit task (e.g., update localStorage, API, etc.)
-    console.log("Task edited", task);
+    setProjectData((prevTasks) =>
+      prevTasks.map((t) => (t.id === task.id ? task : t))
+    );
     toast.success("Task berhasil diedit!"); // Show success notification
     closeModals();
   };
 
   // Function to handle deleting a task
   const handleDeleteTask = (taskId: string) => {
-    // Logic to delete task (e.g., remove from localStorage, API, etc.)
-    console.log("Task deleted", taskId);
+    setProjectData((prevTasks) => prevTasks.filter((t) => t.id !== taskId));
     toast.success("Task berhasil dihapus!"); // Show success notification
   };
+
+  if (loading) {
+    return <div>Loading...</div>; // Show loading indicator while fetching data
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -110,6 +111,9 @@ const Project: React.FC = () => {
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Nama
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Task Type
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Deskripsi
@@ -124,6 +128,9 @@ const Project: React.FC = () => {
               Tag
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Progress
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Action
             </th>
           </tr>
@@ -135,6 +142,9 @@ const Project: React.FC = () => {
               className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
             >
               <td className="px-6 py-4 whitespace-nowrap">{project.title}</td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                {project.task_type.type}
+              </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 {project.description}
               </td>
@@ -150,20 +160,26 @@ const Project: React.FC = () => {
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {project.tags.map((tag) => (
-                  <span
-                    key={tag.title}
-                    className="mr-2"
-                    style={{ color: tag.text, backgroundColor: tag.bg }}
-                  >
-                    {tag.title}
-                  </span>
-                ))}
+                {project.tags.map((tag: TagT) => {
+                  const { bg, text } = getRandomColors(); // Get random colors
+                  return (
+                    <span
+                      key={tag.id}
+                      className="mr-2"
+                      style={{ backgroundColor: bg, color: text }}
+                    >
+                      {tag.title}
+                    </span>
+                  );
+                })}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                {project.progress}%
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <button
                   onClick={openAddModal}
-                  className=" px-4 py-2 font-medium text-white bg-green-600 rounded-md hover:bg-green-500"
+                  className="px-4 py-2 font-medium text-white bg-green-600 rounded-md hover:bg-green-500"
                 >
                   Tambah
                 </button>
@@ -175,7 +191,7 @@ const Project: React.FC = () => {
                 </button>
                 <button
                   onClick={() => handleDeleteTask(project.id)}
-                  className=" px-4 py-2 font-medium text-white bg-orange-600 rounded-md hover:bg-orange-500 focus:outline-none"
+                  className="px-4 py-2 font-medium text-white bg-orange-600 rounded-md hover:bg-orange-500 focus:outline-none"
                 >
                   Delete
                 </button>

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useState, useEffect } from "react";
 import { Columns, TaskData } from "../../types";
@@ -9,17 +8,38 @@ import EditModal from "../../components/Modals/EditModal";
 import ViewModal from "../../components/Modals/ViewModal";
 import Task from "../../components/Task";
 import { toast } from "react-toastify";
-import ToastProvider from "../../helpers/onNotifications"; // Import ToastProvider component
+import ToastProvider from "../../helpers/onNotifications";
 import GenerateModal from "../../components/Modals/GenerateModal";
+import { axiosInstance } from "../../lib/axios";
 
-// Function to get initial columns from localStorage
-const getInitialColumns = (): Columns => {
-  const storedData = localStorage.getItem("taskBoard");
-  return storedData ? JSON.parse(storedData) : {}; // Return an empty object if no data is found
+const fetchTasks = async (): Promise<Columns> => {
+  try {
+    const response = await axiosInstance.get("/tasks"); // API call to fetch tasks
+    const data = response.data.data;
+
+    // Structure columns based on your response format
+    const columns: Columns = data.reduce((acc: any, task: any) => {
+      const taskColumn = task.task_type.type || "General"; // Example: use task type to create column names
+      if (!acc[taskColumn]) {
+        acc[taskColumn] = { name: taskColumn, items: [] };
+      }
+      acc[taskColumn].items.push(task); // Add task to respective column
+      return acc;
+    }, {});
+
+    // Add toast notification for successful fetch
+    toast.success("Tasks loaded successfully!");
+
+    return columns;
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    toast.error("Failed to load tasks.");
+    return {};
+  }
 };
 
 const Home = () => {
-  const [columns, setColumns] = useState<Columns>(getInitialColumns());
+  const [columns, setColumns] = useState<Columns>({});
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -28,10 +48,15 @@ const Home = () => {
   const [deletingTaskId, setDeletingTaskId] = useState<any>(null);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
 
-  // Update localStorage whenever the columns are changed
+  // Fetch tasks on component mount
   useEffect(() => {
-    localStorage.setItem("taskBoard", JSON.stringify(columns));
-  }, [columns]);
+    const loadTasks = async () => {
+      const fetchedColumns = await fetchTasks();
+      setColumns(fetchedColumns);
+    };
+
+    loadTasks();
+  }, []);
 
   const openModal = (columnId: string) => {
     setSelectedColumn(columnId);
@@ -43,15 +68,15 @@ const Home = () => {
   };
 
   const openViewTaskModal = (task: TaskData) => {
-    setSelectedTask(task); // Set the selected task details
-    setViewModalOpen(true); // Open the View Modal
-    setEditModalOpen(false); // Ensure the Edit Modal is closed
+    setSelectedTask(task);
+    setViewModalOpen(true);
+    setEditModalOpen(false);
   };
 
   const openEditModal = (task: TaskData) => {
-    setSelectedTask(task); // Set the selected task details
-    setEditModalOpen(true); // Open the Edit Modal
-    setViewModalOpen(false); // Ensure the View Modal is closed
+    setSelectedTask(task);
+    setEditModalOpen(true);
+    setViewModalOpen(false);
   };
 
   const closeEditModal = () => {
@@ -63,65 +88,51 @@ const Home = () => {
     const newBoard = { ...columns };
     newBoard[selectedColumn].items.push(taskData);
     setColumns(newBoard);
-    toast.success("Task added successfully!"); // Show notification when a task is added
+    toast.success("Task added successfully!");
   };
 
   const handleEditTask = (updatedTask: TaskData) => {
     const newColumns = { ...columns };
-
     const columnId = Object.keys(newColumns).find((id) =>
       newColumns[id].items.some((task) => task.id === updatedTask.id)
     );
-
-    if (!columnId) {
-      console.error("Column not found for task:", updatedTask.id);
-      return;
-    }
+    if (!columnId) return;
 
     const taskIndex = newColumns[columnId].items.findIndex(
       (task) => task.id === updatedTask.id
     );
-    if (taskIndex === -1) {
-      console.error("Task not found:", updatedTask.id);
-      return;
-    }
+    if (taskIndex === -1) return;
 
     newColumns[columnId].items[taskIndex] = updatedTask;
     setColumns(newColumns);
-    toast.info("Task updated successfully!"); // Show notification when a task is updated
+    toast.info("Task updated successfully!");
   };
 
   const handleDeleteTask = (taskId: any) => {
     const newColumns = { ...columns };
-
     const columnId = Object.keys(newColumns).find((id) =>
       newColumns[id].items.some((task) => task.id === taskId)
     );
-
-    if (!columnId) {
-      console.error("Column not found for task:", taskId);
-      return;
-    }
+    if (!columnId) return;
 
     newColumns[columnId].items = newColumns[columnId].items.filter(
       (task) => task.id !== taskId
     );
 
-    setColumns(newColumns); // Update state with new columns
-    toast.error("Task deleted successfully!"); // Show notification when a task is deleted
+    setColumns(newColumns);
+    toast.error("Task deleted successfully!");
   };
 
   return (
     <>
-      <ToastProvider options={{ position: "top-right", autoClose: 3000 }} />{" "}
-      {/* Add ToastProvider component */}
+      <ToastProvider options={{ position: "top-right", autoClose: 3000 }} />
       <DragDropContext
         onDragEnd={(result: any) => onDragEnd(result, columns, setColumns)}
       >
         <div className="w-full flex items-start justify-between px-5 pb-8 md:gap-2 gap-10">
           {Object.entries(columns).map(([columnId, column]: [string, any]) => (
             <div className="w-full flex flex-col gap-0" key={columnId}>
-              <Droppable droppableId={columnId} key={columnId}>
+              <Droppable droppableId={columnId}>
                 {(provided: any) => (
                   <div
                     ref={provided.innerRef}
@@ -143,27 +154,29 @@ const Home = () => {
                             task={task}
                             onView={() => openViewTaskModal(task)}
                             onEdit={() => openEditModal(task)}
-                            onDelete={() => handleDeleteTask(task.id)} // Pass delete function
+                            onDelete={() => handleDeleteTask(task.id)}
                           />
                         )}
                       </Draggable>
                     ))}
                     {provided.placeholder}
+
+                    {/* Add Task button inside the column */}
+                    <div
+                      onClick={() => openModal(columnId)}
+                      className="flex cursor-pointer items-center justify-center gap-1 py-[10px] w-full opacity-90 bg-white rounded-lg shadow-sm text-[#555] font-medium text-[15px] mt-2"
+                    >
+                      <AddOutline color={"#555"} />
+                      Add Task
+                    </div>
                   </div>
                 )}
               </Droppable>
-              <div
-                onClick={() => openModal(columnId)}
-                className="flex cursor-pointer items-center justify-center gap-1 py-[10px] md:w-[90%] w-full opacity-90 bg-white rounded-lg shadow-sm text-[#555] font-medium text-[15px]"
-              >
-                <AddOutline color={"#555"} />
-                Add Task
-              </div>
             </div>
           ))}
         </div>
       </DragDropContext>
-      {/* Modal Components */}
+
       <AddModal
         isOpen={modalOpen}
         onClose={closeModal}
@@ -181,8 +194,8 @@ const Home = () => {
           />
           <ViewModal
             isOpen={viewModalOpen}
-            onClose={() => setViewModalOpen(false)} // Close the correct modal
-            task={selectedTask} // Pass the selected task to the modal
+            onClose={() => setViewModalOpen(false)}
+            task={selectedTask}
           />
         </>
       )}

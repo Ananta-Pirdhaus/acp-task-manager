@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { getRandomColors } from "../../helpers/getRandomColors";
 import { toast } from "react-toastify"; // Import toast for notifications
-import ToastProvider from "../../helpers/onNotifications"; // Import ToastProvider
-import { TaskT, Columns } from "../../types";
-
-// Interfaces remain unchanged...
-// [Your existing Tag and TaskData interfaces here]
+import { TaskT } from "../../types"; // Assuming TaskT is defined in the types
+import { axiosInstance } from "../../lib/axios";
 
 const EditModal = ({
   isOpen,
@@ -94,7 +91,7 @@ const EditModal = ({
     setTaskData(currentTaskData || defaultTaskData); // Reset task data
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const requiredFields: (keyof TaskT)[] = [
       "title",
       "priority",
@@ -104,15 +101,48 @@ const EditModal = ({
       "endDate",
       "endTime",
     ];
-    const isValid = requiredFields.every((field) => taskData[field] || "");
 
-    if (!isValid) {
-      toast.error("Please fill in all required fields."); // Notify error
+    // Validate field types (for example, check if `priority` is a string)
+    if (typeof taskData.priority !== "string") {
+      toast.error("Priority must be a string");
       return;
     }
 
-    handleEditTask(taskData); // Pass taskData to parent function
-    closeModal(); // Close the modal
+    // Ensure all required fields are provided
+    const isValid = requiredFields.every((field) => taskData[field]);
+
+    if (!isValid) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.put(
+        `/tasks/${taskData.id}`,
+        taskData
+      );
+
+      if (response.status === 200) {
+        toast.success("Task updated successfully!");
+        handleEditTask(taskData);
+        closeModal();
+      }
+    } catch (error) {
+      console.error("Error updating task:", error);
+
+      if (error.response) {
+        // Server responded with a status other than 200
+        console.error("Response error:", error.response.data);
+      } else if (error.request) {
+        // No response received
+        console.error("Request error:", error.request);
+      } else {
+        // Some other error occurred
+        console.error("Error message:", error.message);
+      }
+
+      toast.error("Failed to update the task.");
+    }
   };
 
   return (
@@ -218,22 +248,7 @@ const EditModal = ({
             </div>
           ))}
         </div>
-        <div className="w-full flex items-center gap-4 justify-between">
-          <input
-            type="text"
-            name="alt"
-            value={taskData.alt || ""}
-            onChange={handleChange}
-            placeholder="Image Alt"
-            className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
-          />
-          <input
-            type="file"
-            name="image"
-            onChange={handleImageChange}
-            className="w-full"
-          />
-        </div>
+
         {taskData.image && (
           <img
             src={taskData.image}

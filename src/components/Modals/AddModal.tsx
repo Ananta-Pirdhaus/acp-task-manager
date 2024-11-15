@@ -1,7 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { getRandomColors } from "../../helpers/getRandomColors";
 import { v4 as uuidv4 } from "uuid";
+import { axiosInstance } from "../../lib/axios";
+import { TaskT, TagT } from "../../types";
 
 interface Tag {
   title: string;
@@ -39,6 +40,7 @@ const AddModal = ({
 
   const [taskData, setTaskData] = useState(initialTaskData);
   const [tagTitle, setTagTitle] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -76,9 +78,46 @@ const AddModal = ({
     setTaskData(initialTaskData);
   };
 
-  const handleSubmit = () => {
-    handleAddTask(taskData);
-    closeModal();
+  const handleSubmit = async () => {
+    // Check if the end date is provided
+    if (!taskData.endDate) {
+      setErrorMessage("The end date field is required.");
+      return;
+    }
+
+    // Prepare the task data in the required format
+    const taskToCreate = {
+      title: taskData.title,
+      description: taskData.description,
+      priority: taskData.priority,
+      startDate: taskData.startDate,
+      endDate: taskData.endDate,
+      startTime: taskData.startTime,
+      endTime: taskData.endTime,
+      task_type: "Done", // Assuming task type is fixed as "Todo" here, otherwise make it dynamic
+      progress: taskData.progress,
+      tags: taskData.tags.map((tag) => ({
+        title: tag.title,
+        color: tag.bg, // Assuming color is the background color for the tag
+      })),
+    };
+
+    try {
+      // Send POST request to create the task
+      const response = await axiosInstance.post("/tasks", taskToCreate);
+
+      // Handle success (task created)
+      console.log("Task created successfully:", response.data);
+      handleAddTask(response.data); // Assuming handleAddTask is for updating local state after task creation
+      closeModal();
+    } catch (error) {
+      // Handle error (e.g., task creation failed)
+      console.error(
+        "Error creating task:",
+        error.response?.data || error.message
+      );
+      setErrorMessage(error.response?.data?.message || "An error occurred.");
+    }
   };
 
   return (
@@ -92,6 +131,9 @@ const AddModal = ({
         onClick={closeModal}
       ></div>
       <div className="md:w-[30vw] w-[90%] bg-white rounded-lg shadow-md z-50 flex flex-col items-center gap-3 px-5 py-6">
+        {errorMessage && (
+          <div className="text-red-500 text-sm">{errorMessage}</div>
+        )}
         <input
           type="text"
           name="title"
@@ -108,8 +150,6 @@ const AddModal = ({
           placeholder="Description"
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm font-medium"
         />
-
-        {/* Priority selection */}
         <select
           name="priority"
           value={taskData.priority}
@@ -120,7 +160,6 @@ const AddModal = ({
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
-
         <input
           type="date"
           name="startDate"
@@ -143,15 +182,13 @@ const AddModal = ({
           className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
         />
 
-        {taskData.startDate && taskData.startDate === taskData.endDate && (
-          <input
-            type="time"
-            name="endTime"
-            value={taskData.endTime}
-            onChange={handleChange}
-            className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
-          />
-        )}
+        <input
+          type="time"
+          name="endTime"
+          value={taskData.endTime}
+          onChange={handleChange}
+          className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
+        />
 
         <label className="w-full text-sm">Progress: {taskData.progress}%</label>
         <input
@@ -163,7 +200,6 @@ const AddModal = ({
           onChange={handleChange}
           className="w-full h-2 bg-slate-300 rounded-lg appearance-none cursor-pointer"
         />
-
         <input
           type="text"
           value={tagTitle}
@@ -189,22 +225,7 @@ const AddModal = ({
             </div>
           ))}
         </div>
-        <div className="w-full flex items-center gap-4 justify-between">
-          <input
-            type="text"
-            name="alt"
-            value={taskData.alt}
-            onChange={handleChange}
-            placeholder="Image Alt"
-            className="w-full h-12 px-3 outline-none rounded-md bg-slate-100 border border-slate-300 text-sm"
-          />
-          <input
-            type="file"
-            name="image"
-            onChange={handleImageChange}
-            className="w-full"
-          />
-        </div>
+      
         <button
           className="w-full mt-3 rounded-md h-9 bg-orange-400 text-blue-50 font-medium"
           onClick={handleSubmit}

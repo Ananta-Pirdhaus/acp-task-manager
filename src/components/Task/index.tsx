@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   TimeOutline,
   EyeOutline,
@@ -6,15 +5,17 @@ import {
   TrashBinOutline,
 } from "react-ionicons";
 import { TaskT } from "../../types";
-import { DraggableProvided } from "react-beautiful-dnd"; // Import the correct type
+import { DraggableProvided } from "react-beautiful-dnd";
 import { useEffect, useState } from "react";
+import { axiosInstance } from "../../lib/axios";
+import { getRandomColors } from "../../helpers/getRandomColors"; // Import getRandomColors
 
 interface TaskProps {
   task: TaskT;
-  provided: DraggableProvided; // Use DraggableProvided type instead of 'any'
+  provided: DraggableProvided;
   onEdit: () => void;
   onDelete: () => void;
-  onView: () => void; // Add onView function prop
+  onView: () => void;
 }
 
 const Task = ({ task, provided, onEdit, onDelete, onView }: TaskProps) => {
@@ -25,51 +26,46 @@ const Task = ({ task, provided, onEdit, onDelete, onView }: TaskProps) => {
     startDate,
     endDate,
     startTime,
-    endTime, // Assuming the task may have an `endTime` if the task ends on the same day
+    endTime,
     image,
     alt,
     tags,
   } = task;
 
-  const [progress, setProgress] = useState<number>(task.progress || 0); // Default to task's initial progress or 0
+  const [progress, setProgress] = useState<number>(task.progress || 0);
 
-  // Retrieve the progress from localStorage
   useEffect(() => {
-    const savedBoard = localStorage.getItem("taskBoard");
-    if (savedBoard) {
-      const boardData = JSON.parse(savedBoard);
+    const fetchTaskProgress = async () => {
+      try {
+        const response = await axiosInstance.get(`/tasks/${task.id}`);
+        const taskData = response.data;
 
-      // Find the task by id and update the progress if it exists
-      const taskFromStorage = Object.values(boardData)
-        .flatMap((column: any) => column.items)
-        .find((item: any) => item.id === task.id);
-
-      if (taskFromStorage && taskFromStorage.progress) {
-        setProgress(taskFromStorage.progress);
+        if (taskData && taskData.progress !== undefined) {
+          setProgress(taskData.progress);
+        }
+      } catch (error) {
+        console.error("Error fetching task progress:", error);
       }
-    }
+    };
+
+    fetchTaskProgress();
   }, [task.id]);
 
-  // Convert start and end times to Date objects
   const startDateTime = new Date(`${startDate}T${startTime}`);
   let endDateTime;
 
-  // If the task ends on the same day, use the `endTime`; otherwise, use the `endDate`
   if (startDate === endDate && endTime) {
     endDateTime = new Date(`${endDate}T${endTime}`);
   } else {
     endDateTime = new Date(endDate);
   }
 
-  // Calculate the difference in milliseconds
   const durationInMilliseconds =
     endDateTime.getTime() - startDateTime.getTime();
-
-  // Calculate the duration in hours and days
-  const durationInHours = Math.round(durationInMilliseconds / (1000 * 60 * 60)); // Convert to hours
+  const durationInHours = Math.round(durationInMilliseconds / (1000 * 60 * 60));
   const durationInDays = Math.round(
     durationInMilliseconds / (1000 * 60 * 60 * 24)
-  ); // Convert to days
+  );
 
   return (
     <div
@@ -81,25 +77,27 @@ const Task = ({ task, provided, onEdit, onDelete, onView }: TaskProps) => {
       {image && alt && (
         <img src={image} alt={alt} className="w-full h-[170px] rounded-lg" />
       )}
-      <div className="flex items-center gap-2">
-        {tags &&
-          tags.map((tag) => (
-            <span
-              key={tag.title}
-              className="px-[10px] py-[2px] text-[13px] font-medium rounded-md"
-              style={{ backgroundColor: tag.bg, color: tag.text }}
-            >
-              {tag.title}
-            </span>
-          ))}
-      </div>
+
       <div className="w-full flex items-start flex-col gap-0">
         <span className="text-[15.5px] font-medium text-[#555]">{title}</span>
         <span className="text-[13.5px] text-gray-500">{description}</span>
       </div>
       <div className="w-full border border-dashed"></div>
-
-      {/* Progress Bar Section */}
+      <div className="flex items-center gap-2">
+        {tags &&
+          tags.map((tag) => {
+            const { bg, text } = tag.bg && tag.text ? tag : getRandomColors(); // Apply random colors if none are provided
+            return (
+              <span
+                key={tag.title}
+                className="px-[10px] py-[2px] text-[13px] font-medium rounded-md"
+                style={{ backgroundColor: bg, color: text }}
+              >
+                {tag.title}
+              </span>
+            );
+          })}
+      </div>
       <div className="w-full flex items-center justify-between">
         <span className="text-[13px] text-gray-700">Progress:</span>
         <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mx-2">
@@ -129,16 +127,14 @@ const Task = ({ task, provided, onEdit, onDelete, onView }: TaskProps) => {
               : "bg-blue-500"
           }`}
         ></div>
+
         <div className="flex gap-3 items-center">
-          {/* View button */}
           <button onClick={onView} className="flex items-center text-gray-600">
             <EyeOutline color={"#666"} />
           </button>
-          {/* Edit button */}
           <button onClick={onEdit} className="flex items-center text-gray-600">
             <PencilOutline color={"#666"} />
           </button>
-          {/* Delete button */}
           <button
             onClick={onDelete}
             className="flex items-center text-gray-600"
