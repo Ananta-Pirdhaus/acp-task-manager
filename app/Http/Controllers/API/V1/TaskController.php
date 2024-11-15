@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\V1;
 
 use App\Models\Tag;
 use App\Models\Task;
+use App\Models\User;
 use Ramsey\Uuid\Uuid;
 use App\Models\Priority;
 use App\Models\TaskType;
@@ -19,7 +20,7 @@ class TaskController extends Controller
         $this->middleware('auth:sanctum')->except(['index', 'show']);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, $user_id)
     {
         try {
             $validated = $request->validate([
@@ -37,15 +38,9 @@ class TaskController extends Controller
                 'tags.*.color' => 'string|max:7',
             ]);
 
-            $user = Auth::user();
-            if (!$user) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'User not authenticated.'
-                ], 401);
-            }
-
-            $task = Task::create([
+            Log::info("Method store dipanggil dengan user_id: $user_id");
+            $user = User::findOrFail($user_id);
+            $task = new Task([
                 'title' => $request->title,
                 'description' => $request->description,
                 'priority' => $request->priority,
@@ -55,8 +50,9 @@ class TaskController extends Controller
                 'endTime' => $request->endTime,
                 'progress' => $request->progress,
                 'task_type_id' => $request->task_type_id,
-                'user_id' => $user->user_id,
             ]);
+
+            $user->tasks()->save($task);
 
             if ($request->hasFile('image') && $request->image->isValid()) {
                 $imageName = time() . '.' . $request->image->extension();
@@ -228,4 +224,45 @@ class TaskController extends Controller
             'message' => 'Task berhasil dihapus.'
         ], 200);
     }
+    
+    public function getTasksByUserId(Request $request, $user_id)
+    {
+        try {   
+            $authenticatedUser = $request->user();
+            if ($authenticatedUser->user_id != $user_id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Anda tidak memiliki akses untuk melihat task ini.'
+                ], 403);
+            }
+
+            $tasks = Task::with(['taskType', 'tags', 'priority', 'user'])
+                ->where('user_id', $user_id)
+                ->get();
+
+            if ($tasks->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tidak ada task ditemukan untuk user ini.'
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => true,
+                'data' => $tasks,
+                'message' => 'Tasks berhasil diambil.'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data tasks.',
+            ], 500);
+        }
+    }
+
+    public function handleUnsupportedMethod()
+    {
+        return response()->json(['message' => 'Method Not Allowed'], 405);
+    }
+
 }
