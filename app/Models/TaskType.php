@@ -13,7 +13,6 @@ class TaskType extends Model
 
     public function tasks()
     {
-        return $this->hasMany(Task::class, 'task_type_id');
+        return $this->hasMany(Task::class);
     }
-
 }

@@ -39,7 +39,6 @@ class AuthController extends Controller
             'role_id' => $request->role_id,
         ]);
 
-
         return response()->json([
             'message' => 'Registration successful',
             'user' => [
@@ -181,3 +180,4 @@ class AuthController extends Controller
         }
     }
 }
+

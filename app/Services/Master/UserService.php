@@ -72,7 +72,7 @@ class UserService
                 'username' => 'required|string|max:255|unique:users',
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required|string|min:8',
-                'role' => 'required|array', 
+                'role' => 'required|integer',
             ]);
 
             if ($validator->fails()) {
@@ -89,7 +89,7 @@ class UserService
                 'password' => Hash::make($payload['password']),
                 'status' => "ENABLE",
                 'fail_login_count' => 0,
-                'role_id' => $payload['role'][0],
+                'role_id' => $payload['role'],
                 'created_at' => Carbon::now(),
                 'created_by' => isset($payload['created_by']) ? $payload['created_by'] : 1,
             ]);
@@ -158,7 +158,8 @@ class UserService
             ]);
 
             if (isset($payload['role'])) {
-                self::assignRoles($payload['role'], $data->user_id);
+                $data->role_id = $payload['role'];
+                $data->save();
             }
 
             DB::commit();
