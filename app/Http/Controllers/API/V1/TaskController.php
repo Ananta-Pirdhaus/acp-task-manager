@@ -104,9 +104,10 @@ class TaskController extends Controller
 
             if ($tasks->isEmpty()) {
                 return response()->json([
-                    'status' => false,
+                    'status' => true,
+                    'data' => [],
                     'message' => 'Tidak ada task ditemukan untuk user ini.'
-                ], 404);
+                ], 200);
             }
 
             return response()->json([
