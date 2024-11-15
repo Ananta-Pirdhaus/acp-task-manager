@@ -25,7 +25,7 @@ class TaskController extends Controller
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'task_type' => 'required|string|in:Todo,Doing,Done',
+                'task_type_id' => 'required|exists:task_types,id',
                 'priority' => 'required|string|in:high,medium,low',
                 'startDate' => 'required|date',
                 'endDate' => 'required|date',
@@ -36,16 +36,6 @@ class TaskController extends Controller
                 'tags.*.title' => 'string|max:255',
                 'tags.*.color' => 'string|max:7',
             ]);
-
-            $taskTypeId = TaskType::where('type', $request->task_type)->first()->id ?? null;
-
-            if (!$taskTypeId) {
-                Log::warning('Task type ID tidak ditemukan untuk task type:', ['task_type' => $request->task_type]);
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Invalid task type.',
-                ], 400);
-            }
 
             $user = Auth::user();
             if (!$user) {
@@ -64,7 +54,7 @@ class TaskController extends Controller
                 'startTime' => $request->startTime,
                 'endTime' => $request->endTime,
                 'progress' => $request->progress,
-                'task_type_id' => $taskTypeId,
+                'task_type_id' => $request->task_type_id,
                 'user_id' => $user->user_id,
             ]);
 
@@ -135,13 +125,13 @@ class TaskController extends Controller
         }
     }
 
-    public function update(Request $request, $uuid)
+    public function update(Request $request, $id)
     {
         try {
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'task_type' => 'required|string|in:Todo,Doing,Done',
+                'task_type_id' => 'required|exists:task_types,id',
                 'priority' => 'required|string|in:high,medium,low',
                 'startDate' => 'required|date',
                 'endDate' => 'required|date',
@@ -154,7 +144,7 @@ class TaskController extends Controller
                 'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             ]);
 
-            $task = Task::where('id', $uuid)->first();
+            $task = Task::find($id);
 
             if (!$task) {
                 return response()->json([
@@ -163,20 +153,10 @@ class TaskController extends Controller
                 ], 404);
             }
 
-            $taskTypeId = TaskType::where('type', $request->task_type)->first()->id ?? null;
-
-            if (!$taskTypeId) {
-                Log::warning('Task type ID not found for task type:', ['task_type' => $request->task_type]);
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Invalid task type.',
-                ], 400);
-            }
-
             $task->update([
                 'title' => $request->title,
                 'description' => $request->description,
-                'task_type_id' => $taskTypeId,
+                'task_type_id' => $request->task_type_id,
                 'priority' => $request->priority,
                 'startDate' => $request->startDate,
                 'endDate' => $request->endDate,
